@@ -36,7 +36,7 @@ def convert_ips(input_urls, output_files, bot, chat_id):
 if __name__ == "__main__":
     input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf",'https://raw.githubusercontent.com/China-xb/zidonghuaip/main/ip.txt','https://addressesapi.090227.xyz/CloudFlareYes']
     output_files = ["bestproxy.txt", "bestcf.txt",'ip.txt','pure.txt']
-    bot_token = "你的电报机器人令牌"  # 替换为你的电报机器人令牌
-    chat_id = "你的电报聊天ID"  # 替换为你的电报聊天ID
+    bot_token = "6701932453:AAE2hVVH1WGvHeLxHX-m2laWqnKgz9FD4Dg"  # 替换为你的电报机器人令牌
+    chat_id = "1220184704"  # 替换为你的电报聊天ID
     bot = Bot(token=bot_token)
     convert_ips(input_urls, output_files, bot, chat_id)
