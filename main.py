@@ -27,9 +27,10 @@ def scan_ports(ip):
     return open_port
 
 def process_ip(ip):
+    location = get_location(ip)
     port = scan_ports(ip)
+    
     if port:
-        location = get_location(ip)
         if location:
             return f"{ip}:{port}#{location}\n"
         else:
@@ -38,17 +39,17 @@ def process_ip(ip):
         return f"{ip}\n"
 
 def convert_ips(input_urls, output_files):
-    with ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor(max_workers=64) as executor:  # 指定最大线程数为10
         for input_url, output_file in zip(input_urls, output_files):
             ips = get_ips_from_url(input_url)
+
             results = list(executor.map(process_ip, ips))
-            
+
             with open(output_file, 'w') as f:
                 for result in results:
                     f.write(result)
 
 if __name__ == "__main__":
-    # 定义获取IP地址列表的函数 get_ips_from_url
     def get_ips_from_url(url):
         try:
             response = requests.get(url)
@@ -64,6 +65,6 @@ if __name__ == "__main__":
                   'https://raw.githubusercontent.com/China-xb/zidonghuaip/main/ip.txt',
                   'https://addressesapi.090227.xyz/CloudFlareYes',
                   'https://kzip.pages.dev/kzip.txt?token=mimausb8']
-    
+
     output_files = ["bestproxy.txt", "bestcf.txt", 'ip.txt', 'pure.txt', 'kzip.txt']
     convert_ips(input_urls, output_files)
