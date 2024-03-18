@@ -29,11 +29,11 @@ def convert_ips(input_urls, output_files):
             for ip in ips:
                 location = get_location(ip)
                 if location:
-                    f.write(f"{ip}#{location}\n")
+                    f.write(f"{ip}#{location}n")
                 else:
-                    f.write(f"{ip}#Unknown\n")
+                    f.write(f"{ip}#Unknownn")
 
 if __name__ == "__main__":
-    input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf","https://cfno1.pages.dev/pure"]  # 包含IP地址的txt文件的多个URL
-    output_files = ["bestproxy.txt", "bestcf.txt"]
+    input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf", "https://cfno1.pages.dev/pure"]  # 包含IP地址的txt文件的多个URL
+    output_files = ["bestproxy.txt", "bestcf.txt", "pure.txt"]  # 每个输出文件对应一个输入URL
     convert_ips(input_urls, output_files)
