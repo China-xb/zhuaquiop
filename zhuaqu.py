@@ -9,7 +9,7 @@ urls = ['https://monitor.gacjie.cn/page/cloudflare/ipv4.html',
         ]
 
 # 正则表达式用于匹配IP地址
-ip_pattern = r'd{1,3}.d{1,3}.d{1,3}.d{1,3}'
+ip_pattern = r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
 
 # 检查ip.txt文件是否存在,如果存在则删除它
 if os.path.exists('ip.txt'):
@@ -20,7 +20,6 @@ with open('ip.txt', 'w') as file:
     for url in urls:
         # 发送HTTP请求获取网页内容
         response = requests.get(url)
-        response.encoding = 'utf-8'
         
         # 使用BeautifulSoup解析HTML
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -38,8 +37,8 @@ with open('ip.txt', 'w') as file:
             element_text = element.get_text()
             ip_matches = re.findall(ip_pattern, element_text)
             
-            # 如果找到IP地址,在IP后面追加 ", 443"和将其位置写入文件
+            # 如果找到IP地址,则写入文件
             for ip in ip_matches:
-                file.write(ip + ',443#' + ip + 'n')
+                file.write(ip + '\n')
 
 print('IP地址已保存到ip.txt文件中。')
