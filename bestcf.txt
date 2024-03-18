@@ -1,15 +1,15 @@
-104.18.6.208:443#Canada Ontario Toronto
-104.21.25.136:443#Canada Ontario Toronto
-172.66.47.55:443#Canada Ontario Toronto
-104.18.113.46:443#Canada Ontario Toronto
-104.17.224.21:443#Canada Ontario Toronto
-104.21.227.212:443#Canada Ontario Toronto
-104.21.233.160:443#Canada Ontario Toronto
-198.41.212.173:443#Canada Ontario Toronto
-104.21.22.153:443#Canada Ontario Toronto
-104.17.232.108:443#Canada Ontario Toronto
-104.18.37.70:443#Canada Ontario Toronto
-104.18.4.226:443#Canada Ontario Toronto
-104.18.15.103:443#Canada Ontario Toronto
-104.16.242.22:443#Canada Ontario Toronto
-198.41.208.51:443#Canada Ontario Toronto
+104.18.6.208:443#Ontario Toronto
+104.21.25.136:443#Ontario Toronto
+172.66.47.55:443#Ontario Toronto
+104.18.113.46:443#Ontario Toronto
+104.17.224.21:443#Ontario Toronto
+104.21.227.212:443#Ontario Toronto
+104.21.233.160:443#Ontario Toronto
+198.41.212.173:443#Ontario Toronto
+104.21.22.153:443#Ontario Toronto
+104.17.232.108:443#Ontario Toronto
+104.18.37.70:443#Ontario Toronto
+104.18.4.226:443#Ontario Toronto
+104.18.15.103:443#Ontario Toronto
+104.16.242.22:443#Ontario Toronto
+198.41.208.51:443#Ontario Toronto
