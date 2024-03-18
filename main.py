@@ -1,20 +1,21 @@
-import requests
+import asyncio
+import aiohttp
 import socket
-from concurrent.futures import ThreadPoolExecutor
 from functools import lru_cache
 
-@lru_cache(maxsize=None)
-def get_location(ip):
+@lru_cache(maxsize=1024)  # 调整缓存大小为1024，根据实际情况调整最佳值
+async def get_location(ip):
     try:
-        response = requests.get(f"http://ip-api.com/json/{ip}")
-        data = response.json()
-        if data['status'] == 'success':
-            return f"{data['country']}"
+        async with aiohttp.ClientSession() as session:
+            async with session.get(f"http://ip-api.com/json/{ip}") as response:
+                data = await response.json()
+                if data['status'] == 'success':
+                    return f"{data['country']}"
     except Exception as e:
         print(f"Error fetching location for IP {ip}: {e}")
     return None
 
-def scan_ports(ip):
+async def scan_ports(ip):
     open_port = None
     for port in range(443, 6001):  # 扫描443至6000端口
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -30,10 +31,10 @@ def scan_ports(ip):
     else:
         return f"{ip}:443"  # 没有开放端口则默认为443端口
 
-def process_ip(ip):
-    scanned_result = scan_ports(ip)
+async def process_ip(ip):
+    scanned_result = await scan_ports(ip)
     ip_address, port = scanned_result.split(':')
-    location = get_location(ip_address)
+    location = await get_location(ip_address)
 
     if '#' in scanned_result:
         return f"{scanned_result}#{location}\n"
@@ -42,32 +43,36 @@ def process_ip(ip):
     else:
         return "\n"
 
-def convert_ips(input_urls, output_files):
-    with ThreadPoolExecutor(max_workers=64) as executor:
-        for input_url, output_file in zip(input_urls, output_files):
-            ips = get_ips_from_url(input_url)  # 获取URL中的IP地址列表
-            results = list(executor.map(process_ip, ips))
+async def convert_ips(input_urls, output_files):
+    tasks = []
+    for input_url, output_file in zip(input_urls, output_files):
+        async with aiohttp.ClientSession() as session:
+            ips = await get_ips_from_url(session, input_url)  # 获取URL中的IP地址列表
+            tasks.extend([process_ip(ip) for ip in ips])
 
-            with open(output_file, 'w') as f:
-                for result in results:
-                    f.write(result)
+    results = await asyncio.gather(*tasks)
+
+    for idx, result in enumerate(results):
+        output_file = output_files[idx % len(output_files)]
+        with open(output_file, 'a') as f:
+            f.write(result)
+
+async def get_ips_from_url(session, url):
+    try:
+        async with session.get(url) as response:
+            if response.status == 200:
+                return (await response.text()).splitlines()
+            else:
+                print(f"Failed to fetch IPs from {url}. Status code: {response.status}")
+    except Exception as e:
+        print(f"Error fetching IPs from {url}: {e}")
+    return []
 
 if __name__ == "__main__":
-    def get_ips_from_url(url):
-        try:
-            response = requests.get(url)
-            if response.status_code == 200:
-                return response.text.splitlines()
-            else:
-                print(f"Failed to fetch IPs from {url}. Status code: {response.status_code}")
-        except Exception as e:
-            print(f"Error fetching IPs from {url}: {e}")
-        return []
-
     input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf",
                   'https://raw.githubusercontent.com/China-xb/zidonghuaip/main/ip.txt',
                   'https://addressesapi.090227.xyz/CloudFlareYes',
                   'https://kzip.pages.dev/kzip.txt?token=mimausb8']  # 包含IP地址的txt文件的多个URL
     output_files = ["bestproxy.txt", "bestcf.txt", 'ip.txt', 'pure.txt', 'kzip.txt']
 
-    convert_ips(input_urls, output_files)
+    asyncio.run(convert_ips(input_urls, output_files), max_workers=50)
