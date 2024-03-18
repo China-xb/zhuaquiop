@@ -46,9 +46,8 @@ def convert_ips(input_urls, output_files):
                     ip_address, open_ports = scanned_result
                     location = get_location(ip_address)
                     if location:
-                        f.write(f"{ip_address}:{open_ports}#{location}\n")
-                else:
-                    f.write(f"{ip}\n")
+                        port_string = ','.join(map(str, open_ports))  # 将端口列表转换为逗号分隔的字符串
+                        f.write(f"{ip_address}:{port_string}#{location}\n")
 
 def get_ips_from_url(url):
     try:
