@@ -47,9 +47,9 @@ def convert_ips(input_urls, output_files, bot_token, bot_chatID):
             for ip in ips:
                 location = get_location(ip)
                 if location:
-                    f.write(f"{ip}:443#{location}n")
+                    f.write(f"{ip}:443#{location}\n")
                 else:
-                    f.write(f"{ip}n")
+                    f.write(f"{ip}\n")
         log_message = f"{output_file}文件更新完毕，已保存 {len(ips)} 条IP地址记录。"
         print(log_message)
         telegram_bot_sendtext(log_message, bot_token, bot_chatID)
