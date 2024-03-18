@@ -1,4 +1,4 @@
-name: Add Location of IP Addresses
+name: Add Location of IP Addresses and Send Telegram Notification
 
 on:
   push:
@@ -11,8 +11,12 @@ on:
 permissions:
   contents: write
 
+env:
+  TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+  TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+
 jobs:
-  Modify_TXT:
+  Modify_TXT_and_Send_Notification:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,21 +26,23 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: 3.12
+        python-version: 3.10
 
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install requests
+        pip install requests python-telegram-bot
 
     - name: Run Conversion Script
-      run: python main.py  # 执行Python脚本进行IP地址转换
+      run: python main.py  # 执行Python脚本来获取并更新IP地址的位置信息
 
-    - name: Commit Changes
+    - name: Commit Changes (if any)
       run: |
-        if [[ -n "$(git status --porcelain)" ]]; then
+        CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD)
+        if [[ ! -z "$CHANGED_FILES" ]]; then
           echo "Changes detected in the repository."
-          git config core.ignorecase false
+          git config core.eol lf
+          git config core.autocrlf input
           git config --local user.email "gugeyouxiangzjq@gmail.com"
           git config --local user.name "6693152"
           git add .
@@ -45,3 +51,30 @@ jobs:
         else
           echo "No changes detected in the repository."
         fi
+
+    - name: Send Telegram Notification
+      if: always()  # 不论成功还是失败都要发送通知
+      env:
+        PYTHONUNBUFFERED: 1  # 确保输出即时发送到Telegram
+      run: |
+        import telegram
+        from telegram.ext import Updater
+
+        # 初始化Bot
+        updater = Updater(token=os.environ['TELEGRAM_BOT_TOKEN'], use_context=True)
+
+        # 获取Bot实例
+        dispatcher = updater.dispatcher
+
+        # 发送消息到指定聊天ID
+        chat_id = os.environ['TELEGRAM_CHAT_ID']
+        message_text = f"IP addresses have been updated at {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        context.bot.send_message(chat_id=chat_id, text=message_text)
+
+        # 关闭连接
+        updater.stop()
+
+    # 将必要的环境变量作为GitHub Secrets存储
+    # 在GitHub仓库设置中添加两个Secrets：
+    #   TELEGRAM_BOT_TOKEN: 你的电报机器人的token
+    #   TELEGRAM_CHAT_ID: 目标聊天ID
