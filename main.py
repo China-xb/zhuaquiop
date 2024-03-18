@@ -3,7 +3,7 @@ import aiohttp
 import socket
 from functools import lru_cache
 
-@lru_cache(maxsize=1024)  # 调整缓存大小为1024，根据实际情况调整最佳值
+@lru_cache(maxsize=1024)  # 设置缓存大小为1024
 async def get_location(ip):
     try:
         async with aiohttp.ClientSession() as session:
@@ -16,32 +16,32 @@ async def get_location(ip):
     return None
 
 async def scan_ports(ip):
-    open_port = None
-    for port in range(443, 6001):  # 扫描443至6000端口
+    open_ports = []
+    for port in [443, 8443, 2053, 2087, 2083, 2096]:  # 要扫描的端口列表
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(1)  # 设置超时时间为1秒
         result = s.connect_ex((ip, port))
         if result == 0:  # 如果端口开放
-            open_port = port
-            break
+            open_ports.append(port)
+            break  # 找到开放端口后立即停止扫描其他端口
         s.close()
 
-    if open_port:
-        return f"{ip}:{open_port}"
+    if open_ports:
+        return (ip, open_ports)
     else:
-        return f"{ip}:443"  # 没有开放端口则默认为443端口
+        return None
 
 async def process_ip(ip):
     scanned_result = await scan_ports(ip)
-    ip_address, port = scanned_result.split(':')
-    location = await get_location(ip_address)
+    
+    if scanned_result:
+        ip_address, open_ports = scanned_result
+        location = await get_location(ip_address)
 
-    if '#' in scanned_result:
-        return f"{scanned_result}#{location}\n"
-    elif location:
-        return f"{ip_address}:{port}#{location}\n"
-    else:
-        return "\n"
+        if location:
+            return f"{ip_address}:{open_ports}#{location}\n"
+    
+    return None
 
 async def convert_ips(input_urls, output_files):
     tasks = []
@@ -53,9 +53,10 @@ async def convert_ips(input_urls, output_files):
     results = await asyncio.gather(*tasks)
 
     for idx, result in enumerate(results):
-        output_file = output_files[idx % len(output_files)]
-        with open(output_file, 'a') as f:
-            f.write(result)
+        if result:
+            output_file = output_files[idx % len(output_files)]
+            with open(output_file, 'a') as f:
+                f.write(result)
 
 async def get_ips_from_url(session, url):
     try:
@@ -75,4 +76,4 @@ if __name__ == "__main__":
                   'https://kzip.pages.dev/kzip.txt?token=mimausb8']  # 包含IP地址的txt文件的多个URL
     output_files = ["bestproxy.txt", "bestcf.txt", 'ip.txt', 'pure.txt', 'kzip.txt']
 
-    asyncio.run(convert_ips(input_urls, output_files), max_workers=50)
+    asyncio.run(convert_ips(input_urls, output_files))
