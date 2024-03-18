@@ -1,44 +1,39 @@
-"""
-必须安装的依赖包:
-- requests: 发送HTTP请求
-- beautifulsoup4: 解析HTML文档
-安装依赖命令: pip install requests beautifulsoup4
-"""
-
-import re
 import requests
-from bs4 import BeautifulSoup
 
-# 检查ip.txt文件是否存在，如果不存在则创建一个新文件
-filename = "ip.txt"
-try:
-    with open(filename, 'x') as f:
-        print(f"{filename} 文件创建成功")
-except FileExistsError:
-    print(f"{filename} 文件已存在")
+def get_ips_from_url(url):
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            return response.text.splitlines()
+        else:
+            print(f"Failed to fetch IPs from {url}. Status code: {response.status_code}")
+    except Exception as e:
+        print(f"Error fetching IPs from {url}: {e}")
+    return []
 
-# 整理目标URL列表
-urls = ["https://monitor.gacjie.cn/page/cloudflare/ipv4.html","https://ip.164746.xyz"]
+def get_location(ip):
+    try:
+        response = requests.get(f"http://ip-api.com/json/{ip}")
+        data = response.json()
+        if data['status'] == 'success':
+            return data['countryCode']
+    except Exception as e:
+        print(f"Error fetching location for IP {ip}: {e}")
+    return None
 
-# IP正则表达式
-ip_pattern = re.compile(r'b(?:[0-9]{1,3}.){3}[0-9]{1,3}b')
+def convert_ips(input_urls, output_files):
+    for input_url, output_file in zip(input_urls, output_files):
+        ips = get_ips_from_url(input_url)  # 获取URL中的IP地址列表
+        
+        with open(output_file, 'w') as f:
+            for ip in ips:
+                location = get_location(ip)
+                if location:
+                    f.write(f"{ip}#{location}\n")
+                else:
+                    f.write(f"{ip}#Unknown\n")
 
-# 遍历URL列表
-for url in urls:
-    # 发送HTTP请求获取网页内容
-    response = requests.get(url)
-    # 使用BeautifulSoup解析HTML文档
-    soup = BeautifulSoup(response.content, "html.parser")
-
-    # 根据网站的不同结构找到包含IP地址的元素
-    # 在这里我使用BeautifulSoup的 text 方法获取网页所有文本，然后用正则表达式查找IP地址
-    ip_addresses = re.findall(ip_pattern, soup.text)
-
-    # 如果找到ip地址，则写入文件ip.txt
-    if ip_addresses:
-        with open(filename, 'a') as f:
-            for ip in ip_addresses:
-                f.write(f'{ip}n')
-        print(f"已成功写入 {len(ip_addresses)} 个IP地址到 {filename}")
-    else:
-        print(f"在 {url} 中未找到任何IP地址")
+if __name__ == "__main__":
+    input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf","https://cfno1.pages.dev/pure"]  # 包含IP地址的txt文件的多个URL
+    output_files = ["bestproxy.txt", "bestcf.txt"]
+    convert_ips(input_urls, output_files)
