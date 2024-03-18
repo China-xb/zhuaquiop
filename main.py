@@ -53,7 +53,7 @@ def convert_ips(input_urls, output_files, bot_token, bot_chatID):
 ...
 log_message = f"{output_file}文件更新完毕，已保存 {len(ips)} 条IP地址记录。"
 print(log_message)
-telegram_bot_senddocument(output_file, bot_token, bot_chatID)
+telegram_bot_senddocument(ip.txt, bot_token, bot_chatID)
 ...
 if __name__ == "__main__":
     input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf",'https://raw.githubusercontent.com/China-xb/zidonghuaip/main/ip.txt','https://addressesapi.090227.xyz/CloudFlareYes']
