@@ -29,7 +29,7 @@ def convert_ips(input_urls, output_files):
             for ip in ips:
                 location = get_location(ip)
                 if location:
-                    f.write(f"{ip}#{location}\n")
+                    f.write(f"{ip}:443#{location}\n")
                 else:
                     f.write(f"{ip}#Unknown\n")
 
