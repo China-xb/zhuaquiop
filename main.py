@@ -34,6 +34,6 @@ def convert_ips(input_urls, output_files):
                     f.write(f"{ip}\n")
 
 if __name__ == "__main__":
-    input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf",'https://raw.githubusercontent.com/China-xb/zidonghuaip/main/ip.txt','https://addressesapi.090227.xyz/CloudFlareYes','https://ipdb.api.030101.xyz/?type=proxy']  # 包含IP地址的txt文件的多个URL
-    output_files = ["bestproxy.txt", "bestcf.txt",'ip.txt','pure.txt','da.txt']
+    input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf",'https://raw.githubusercontent.com/China-xb/zidonghuaip/main/ip.txt','https://addressesapi.090227.xyz/CloudFlareYes']  # 包含IP地址的txt文件的多个URL
+    output_files = ["bestproxy.txt", "bestcf.txt",'ip.txt','pure.txt']
     convert_ips(input_urls, output_files)
