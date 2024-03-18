@@ -15,23 +15,25 @@ def get_location(ip):
     return None
 
 def scan_ports(ip):
-    open_ports = []
+    open_port = None
     for port in range(443, 6667):  # 扫描443至6666端口
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(1)  # 设置超时时间为1秒
         result = s.connect_ex((ip, port))
-        if result == 0:
-            open_ports.append(port)
+        if result == 0:  # 如果端口开放
+            open_port = port
+            break
         s.close()
-    return open_ports
+    return open_port
 
 def process_ip(ip):
-    ports = scan_ports(ip)
-    location = get_location(ip)
-    if ports and location:
-        return f"{ip}:{ports}#{location}\n"
-    elif location:
-        return f"{ip}:443#{location}\n"
+    port = scan_ports(ip)
+    if port:
+        location = get_location(ip)
+        if location:
+            return f"{ip}:{port}#{location}\n"
+        else:
+            return f"{ip}:{port}\n"
     else:
         return f"{ip}\n"
 
@@ -46,7 +48,7 @@ def convert_ips(input_urls, output_files):
                     f.write(result)
 
 if __name__ == "__main__":
-    # 定义 get_ips_from_url 函数获取IP地址列表
+    # 定义获取IP地址列表的函数 get_ips_from_url
     def get_ips_from_url(url):
         try:
             response = requests.get(url)
