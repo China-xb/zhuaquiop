@@ -10,17 +10,17 @@ def get_ips_from_url(url):
     except Exception as e:
         print(f"Error fetching IPs from {url}: {e}")
     return []
-
 def get_location(ip):
     try:
         response = requests.get(f"http://ip-api.com/json/{ip}")
         data = response.json()
         if data['status'] == 'success':
-            return data['countryCode']
+            # 更详细的地理位置描述
+            return f"{data['country']} {data['regionName']} {data['city']}"
     except Exception as e:
         print(f"Error fetching location for IP {ip}: {e}")
     return None
-
+    
 def convert_ips(input_urls, output_files):
     for input_url, output_file in zip(input_urls, output_files):
         ips = get_ips_from_url(input_url)  # 获取URL中的IP地址列表
