@@ -1,15 +1,15 @@
-129.150.63.96:443#SG
-158.178.241.45:443#SG
-158.178.242.5:443#SG
-8.217.221.165:443#HK
-47.242.171.94:443#HK
-47.242.176.237:443#HK
-47.74.22.53:443#JP
-8.218.65.237:443#HK
-47.76.33.40:443#HK
-47.245.10.123:443#JP
-47.245.41.169:443#JP
-8.217.207.60:443#HK
-47.76.49.246:443#HK
-8.218.65.237:443#HK
-8.218.48.92:443#HK
+129.150.63.96:443#Singapore South East Singapore
+158.178.241.45:443#Singapore South East Singapore
+158.178.242.5:443#Singapore South East Singapore
+8.217.221.165:443#Hong Kong Kowloon Hong Kong
+47.242.171.94:443#Hong Kong Central and Western District Hong Kong
+47.242.176.237:443#Hong Kong Central and Western District Hong Kong
+47.74.22.53:443#Japan Tokyo Tokyo
+8.218.65.237:443#Hong Kong Kowloon Hong Kong
+47.76.33.40:443#Hong Kong Kowloon Hong Kong
+47.245.10.123:443#Japan Tokyo Tokyo
+47.245.41.169:443#Japan Tokyo Tokyo
+8.217.207.60:443#Hong Kong Kowloon Hong Kong
+47.76.49.246:443#Hong Kong Kowloon Hong Kong
+8.218.65.237:443#Hong Kong Kowloon Hong Kong
+8.218.48.92:443#Hong Kong Kowloon Hong Kong
