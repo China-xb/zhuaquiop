@@ -16,7 +16,7 @@ def get_location(ip):
         data = response.json()
         if data['status'] == 'success':
             # 更详细的地理位置描述
-            return f"{data['country']}}"
+            return f"{data['country']}"}"
     except Exception as e:
         print(f"Error fetching location for IP {ip}: {e}")
     return None 
