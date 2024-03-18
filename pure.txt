@@ -1,1 +1,15 @@
-149.104.35.60,5010,HK-Oracle Cloud#Unknownn47.76.33.40,2053,HK-45102-Alibaba#Unknownn218.204.179.8,50394,CN-Eons Data Communications#Unknownn35.201.203.106,443,TW-Google Cloud#Unknownn43.156.6.97,10392,SG-Tencent cloud computing#Unknownn20.243.29.138,34237,JP-Microsoft Azure#Unknownn146.56.130.56,20010,KR-Oracle Svenska AB#Unknownn154.17.6.196,51297,US-DMIT#Unknownn#USn
+162.159.160.48:443#CM-Default#Unknown
+172.67.75.179:443#CM-Default#Unknown
+172.67.185.233:443#CM-Default#Unknown
+172.67.197.127:443#CM-Default#Unknown
+172.67.68.2:443#CM-Default#Unknown
+172.64.164.108:443#CU-MAD#Unknown
+172.67.227.115:443#CU-SJC#Unknown
+172.67.104.93:443#CU-SJC#Unknown
+172.67.176.255:443#CU-SJC#Unknown
+172.67.95.60:443#CU-SJC#Unknown
+172.67.95.46:443#CT-IAD#Unknown
+172.67.39.91:443#CT-IAD#Unknown
+162.159.137.26:443#CT-SJC#Unknown
+172.67.227.29:443#CT-LHR#Unknown
+172.67.247.163:443#CT-LHR#Unknown
