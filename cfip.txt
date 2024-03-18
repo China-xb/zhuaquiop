@@ -1,1 +1,9 @@
+45.78.16.178,443,HK-xTom
+47.242.59.216,443,HK-45102-Alibaba
+218.204.179.8,50394,CN-Eons Data Communications
+35.201.203.106,443,TW-Google Cloud
+43.134.166.213,10444,SG-Tencent cloud computing
+20.243.29.138,34237,JP-Microsoft Azure
+132.226.174.167,10057,KR-Oracle Cloud
+154.17.2.49,26558,US-DMIT
 
