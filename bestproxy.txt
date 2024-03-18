@@ -1,15 +1,15 @@
-158.178.242.56:443#South East Singapore
-158.178.242.5:443#South East Singapore
-168.138.184.64:443#South East Singapore
-158.178.246.169:443#South East Singapore
-158.178.241.45:443#South East Singapore
-8.217.221.165:443#Kowloon Hong Kong
-8.218.48.92:443#Kowloon Hong Kong
-47.74.62.71:443#Tokyo Tokyo
-47.74.52.188:443#Tokyo Tokyo
-47.74.45.143:443#Tokyo Tokyo
-47.245.41.169:443#Tokyo Tokyo
-47.245.10.123:443#Tokyo Tokyo
-8.218.65.237:443#Kowloon Hong Kong
-47.76.33.40:443#Kowloon Hong Kong
-8.218.65.237:443#Kowloon Hong Kong
+158.178.242.56:443#SingaporeSingapore
+158.178.242.5:443#SingaporeSingapore
+168.138.184.64:443#SingaporeSingapore
+158.178.246.169:443#SingaporeSingapore
+158.178.241.45:443#SingaporeSingapore
+8.217.221.165:443#Hong KongHong Kong
+8.218.48.92:443#Hong KongHong Kong
+47.74.62.71:443#JapanTokyo
+47.74.52.188:443#JapanTokyo
+47.74.45.143:443#JapanTokyo
+47.245.41.169:443#JapanTokyo
+47.245.10.123:443#JapanTokyo
+8.218.65.237:443#Hong KongHong Kong
+47.76.33.40:443#Hong KongHong Kong
+8.218.65.237:443#Hong KongHong Kong

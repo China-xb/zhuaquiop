@@ -1,18 +1,18 @@
-104.17.18.37:443#Ontario Toronto
-104.17.129.127:443#Ontario Toronto
-104.19.65.100:443#Ontario Toronto
-104.20.23.17:443#Ontario Toronto
-104.20.26.130:443#Ontario Toronto
-162.159.38.225:443#California Los Angeles
-162.159.38.225:443#California Los Angeles
-104.16.116.195:443#Ontario Toronto
-104.16.112.251:443#Ontario Toronto
-104.29.59.82:443#Central and Western District Hong Kong
-104.17.77.51:443#Ontario Toronto
-104.17.242.222:443#Ontario Toronto
-104.16.130.116:443#Ontario Toronto
-104.16.151.130:443#Ontario Toronto
-104.16.89.159:443#Ontario Toronto
+104.17.18.37:443#CanadaToronto
+104.17.129.127:443#CanadaToronto
+104.19.65.100:443#CanadaToronto
+104.20.23.17:443#CanadaToronto
+104.20.26.130:443#CanadaToronto
+162.159.38.225:443#United StatesLos Angeles
+162.159.38.225:443#United StatesLos Angeles
+104.16.116.195:443#CanadaToronto
+104.16.112.251:443#CanadaToronto
+104.29.59.82:443#Hong KongHong Kong
+104.17.77.51:443#CanadaToronto
+104.17.242.222:443#CanadaToronto
+104.16.130.116:443#CanadaToronto
+104.16.151.130:443#CanadaToronto
+104.16.89.159:443#CanadaToronto
 103.21.244.57
 104.19.126.53
 104.17.79.112
