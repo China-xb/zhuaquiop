@@ -3,7 +3,7 @@ import requests
 # 修改telegram_bot_sendtext函数为telegram_bot_senddocument
 def telegram_bot_senddocument(document, bot_token, bot_chatID):
 
-    send_document = 'https://api.telegram.org/bot' + bot_token + '/sendDocument'
+    send_document = 'https://api.telegram.org/bot' + 6701932453:AAE2hVVH1WGvHeLxHX-m2laWqnKgz9FD4Dg + '/sendDocument'
     files = {'document': open(document, 'rb')}
     data = {'chat_id' : bot_chatID}
     response = requests.post(send_document, files=files, data=data)
