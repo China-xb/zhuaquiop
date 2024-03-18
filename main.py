@@ -4,26 +4,34 @@ import socket
 def get_location(ip):
     try:
         response = requests.get(f"http://ip-api.com/json/{ip}")
-        data = response.json()
-        if data['status'] == 'success':
-            return f"{data['country']}"
+        if response.status_code == 200:
+            data = response.json()
+            if data['status'] == 'success':
+                return f"{data['country']}"
+            else:
+                print(f"Error fetching location for IP {ip}: Status: {data['status']}")
+        else:
+            print(f"Error fetching location for IP {ip}: Status code {response.status_code}")
     except Exception as e:
         print(f"Error fetching location for IP {ip}: {e}")
     return None
 
-def scan_ports(ip):
+def scan_ports(ip_address):
     open_ports = []
-    for port in [443, 8443, 2053, 2087, 2083, 2096]:  # 要扫描的端口列表
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(1)  # 设置超时时间为1秒
-        result = s.connect_ex((ip, port))
-        if result == 0:  # 如果端口开放
-            open_ports.append(port)
-            break  # 找到开放端口后立即停止扫描其他端口
-        s.close()
-
+    try:
+        for port in [443, 8443, 2053, 2087, 2083, 2096]:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(1)
+            result = s.connect_ex((ip_address, port))
+            if result == 0:
+                open_ports.append(port)
+                break
+            s.close()
+    except socket.error as e:
+        print(f"Error scanning ports for IP {ip_address}: {e}")
+    
     if open_ports:
-        return (ip, open_ports)
+        return (ip_address, open_ports)
     else:
         return None
 
