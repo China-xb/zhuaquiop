@@ -1,41 +1,47 @@
-name: Update IP List
+name: Add Location of IP Addresses
 
 on:
-  schedule:
-    - cron: '0 */2 * * *' # 每2小时运行一次
-  workflow_dispatch: # 允许手动触发
-  push: # 允许提交触发
+  push:
+    branches:
+      - main
+  schedule:
+    - cron: '0 */2 * * *'  # 每隔两小时触发一次
+  workflow_dispatch:  
+
+permissions:
+  contents: write
 
 jobs:
+  Modify_TXT:
+    runs-on: ubuntu-latest
 
-  update-ip-list:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v3
-      
-    - name: Set up Python
-      uses: actions/setup-python@v4
-      with:
-        python-version: '3.9'
-        
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install requests
-        pip install beautifulsoup4
-        
-    - name: Run script
-      run: python ${{ github.workspace }}/zhuaqu.py
-        
-    - name: Commit and push changes
-      run: |
-        git config --global user.email "gugeyouxiangzjq@gmail.com"
-        git config --global user.name "6693152"
-        if [ -n "$(git status --porcelain)" ]; then
-          git add ip.txt
-          git commit -m "Automatic update"
-          git push
-        else
-          echo "No changes detected, skipping commit."
-        fi
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: 3.12
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install requests
+
+    - name: Run Conversion Script
+      run: python main.py  # 执行Python脚本进行IP地址转换
+
+    - name: Commit Changes
+      run: |
+        if [[ -n "$(git status --porcelain)" ]]; then
+          echo "Changes detected in the repository."
+          git config core.ignorecase false
+          git config --local user.email "gugeyouxiangzjq@gmail.com"
+          git config --local user.name "6693152"
+          git add .
+          git commit -m "Updated at $(date '+%Y-%m-%d %H:%M:%S')"
+          git push
+        else
+          echo "No changes detected in the repository."
+        fi
