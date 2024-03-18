@@ -37,8 +37,8 @@ jobs:
         if [[ -n "$(git status --porcelain)" ]]; then
           echo "Changes detected in the repository."
           git config core.ignorecase false
-          git config --local user.email "gugeyouxiangzjq@gmail.com"
-          git config --local user.name "6693152"
+          git config --local user.email "g"
+          git config --local user.name ""
           git add .
           git commit -m "Updated at $(date '+%Y-%m-%d %H:%M:%S')"
           git push
