@@ -38,7 +38,7 @@ jobs:
           echo "Changes detected in the repository."
           git config core.ignorecase false
           git config --local user.email "g"
-          git config --local user.name ""
+          git config --local user.name "Chinaxb"
           git add .
           git commit -m "Updated at $(date '+%Y-%m-%d %H:%M:%S')"
           git push
