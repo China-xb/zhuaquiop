@@ -16,7 +16,7 @@ def get_location(ip):
 
 def scan_ports(ip):
     open_port = None
-    for port in range(443, 6667):  # 扫描443至6666端口
+    for port in range(443, 6001):  # 扫描443至6000端口
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(1)  # 设置超时时间为1秒
         result = s.connect_ex((ip, port))
@@ -24,25 +24,28 @@ def scan_ports(ip):
             open_port = port
             break
         s.close()
-    return open_port
+
+    if open_port:
+        return f"{ip}:{open_port}"
+    else:
+        return f"{ip}:443"  # 没有开放端口则默认为443端口
 
 def process_ip(ip):
-    location = get_location(ip)
-    port = scan_ports(ip)
-    
-    if port:
-        if location:
-            return f"{ip}:{port}#{location}\n"
-        else:
-            return f"{ip}:{port}\n"
+    scanned_result = scan_ports(ip)
+    ip_address, port = scanned_result.split(':')
+    location = get_location(ip_address)
+
+    if '#' in scanned_result:
+        return f"{scanned_result}#{location}\n"
+    elif location:
+        return f"{ip_address}:{port}#{location}\n"
     else:
-        return f"{ip}\n"
+        return "\n"
 
 def convert_ips(input_urls, output_files):
-    with ThreadPoolExecutor(max_workers=64) as executor:  # 指定最大线程数为10
+    with ThreadPoolExecutor(max_workers=64) as executor:
         for input_url, output_file in zip(input_urls, output_files):
-            ips = get_ips_from_url(input_url)
-
+            ips = get_ips_from_url(input_url)  # 获取URL中的IP地址列表
             results = list(executor.map(process_ip, ips))
 
             with open(output_file, 'w') as f:
@@ -64,7 +67,7 @@ if __name__ == "__main__":
     input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf",
                   'https://raw.githubusercontent.com/China-xb/zidonghuaip/main/ip.txt',
                   'https://addressesapi.090227.xyz/CloudFlareYes',
-                  'https://kzip.pages.dev/kzip.txt?token=mimausb8']
-
+                  'https://kzip.pages.dev/kzip.txt?token=mimausb8']  # 包含IP地址的txt文件的多个URL
     output_files = ["bestproxy.txt", "bestcf.txt", 'ip.txt', 'pure.txt', 'kzip.txt']
+
     convert_ips(input_urls, output_files)
