@@ -16,10 +16,10 @@ def get_location(ip):
         data = response.json()
         if data['status'] == 'success':
             # 更详细的地理位置描述
-            return f"{data['regionName']} {data['city']}"
+            return f"{data['country']}{data['city']}"
     except Exception as e:
         print(f"Error fetching location for IP {ip}: {e}")
-    return None
+    return None 
     
 def convert_ips(input_urls, output_files):
     for input_url, output_file in zip(input_urls, output_files):
