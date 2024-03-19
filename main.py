@@ -40,7 +40,8 @@ def convert_ips(input_urls, output_files, ports):
             for ip in ips:
                 ip_parts = ip.split(':')
                 ip_address = ip_parts[0]
-                ip_port = int(ip_parts[1]) if len(ip_parts) > 1 else scan_ports(ip_address, ports)
+                ip_port = ip_parts[1] if len(ip_parts) > 1 else '443'  # 将端口设置为字符串
+                ip_port = int(ip_port.split('#')[0])  # 提取端口号部分并转换为整数
                 
                 location = get_location(ip_address)
                 if location is not None:
