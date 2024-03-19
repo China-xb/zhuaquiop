@@ -1,5 +1,7 @@
 import requests
 import socket
+import requests
+from bs4 import BeautifulSoup
 
 def get_ips_from_url(url):
     try:
@@ -12,12 +14,14 @@ def get_ips_from_url(url):
         print(f"Error fetching IPs from {url}: {e}")
     return []
 
+
 def get_location(ip):
     try:
         response = requests.get(f"https://ipleak.net/{ip}")
-        data = response.json()
-        if data['status'] == 'success':
-            return data['countryCode']
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.text, 'html.parser')
+            country_code = soup.find('span', class_='country').get_text()
+            return country_code
     except Exception as e:
         print(f"Error fetching location for IP {ip}: {e}")
     return None
