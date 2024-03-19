@@ -29,8 +29,9 @@ if __name__ == "__main__":
     updates = bot.get_updates(limit=3, timeout=10)
 
     all_ips_ports = []
-    for updates = await bot.get_updates() 
-        ips_ports = extract_info_from_message(update.message.text)
+    updates = await bot.get_updates()
+    for update in updates:
+    ips_ports = extract_info_from_message(update.message.text)
         all_ips_ports.extend(ips_ports)
     write_ips_to_file(all_ips_ports, 'tg.txt')
 
