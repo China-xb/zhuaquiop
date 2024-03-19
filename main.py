@@ -2,6 +2,7 @@ import requests
 import socket
 from concurrent.futures import ThreadPoolExecutor
 from bs4 import BeautifulSoup
+updates = await bot.get_updates()
 import re
 
 
