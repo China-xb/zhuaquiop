@@ -28,9 +28,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install requests
-        pip install beautifulsoup4  # 添加此行以安装BeautifulSoup4
-        pip install python-telegram-bot
-        
+
     - name: Run Conversion Script
       run: python main.py  # 执行Python脚本进行IP地址转换
 
@@ -39,8 +37,8 @@ jobs:
         if [[ -n "$(git status --porcelain)" ]]; then
           echo "Changes detected in the repository."
           git config core.ignorecase false
-          git config --local user.email "g"
-          git config --local user.name "Chinaxb"
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Action"
           git add .
           git commit -m "Updated at $(date '+%Y-%m-%d %H:%M:%S')"
           git push
