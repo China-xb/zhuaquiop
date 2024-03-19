@@ -1,5 +1,18 @@
 import requests
 import socket
+import re
+
+def get_ipv4_addresses_from_url(url):
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            ipv4_addresses = re.findall(r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b', response.text)
+            return ipv4_addresses
+        else:
+            print(f"Failed to fetch IPv4 addresses from {url}. Status code: {response.status_code}")
+    except Exception as e:
+        print(f"Error fetching IPv4 addresses from {url}: {e}")
+    return []
 
 def get_location(ip):
     try:
@@ -29,42 +42,35 @@ def scan_ports(ip_address):
             s.close()
     except socket.error as e:
         print(f"Error scanning ports for IP {ip_address}: {e}")
-    
+
     if open_ports:
         return (ip_address, open_ports)
     else:
         return None
 
-def convert_ips(input_urls, output_files):
-    for input_url, output_file in zip(input_urls, output_files):
-        ips = get_ips_from_url(input_url)  # 获取URL中的IP地址列表
-        
-        with open(output_file, 'w') as f:
-            for ip in ips:
-                scanned_result = scan_ports(ip)
-                if scanned_result:
-                    ip_address, open_ports = scanned_result
-                    location = get_location(ip_address)
-                    if location:
-                        port_string = ','.join(map(str, open_ports))  # 将端口列表转换为逗号分隔的字符串
-                        f.write(f"{ip_address}:{port_string}#{location}\n")
-
-def get_ips_from_url(url):
-    try:
-        response = requests.get(url)
-        if response.status_code == 200:
-            return response.text.splitlines()
-        else:
-            print(f"Failed to fetch IPs from {url}. Status code: {response.status_code}")
-    except Exception as e:
-        print(f"Error fetching IPs from {url}: {e}")
-    return []
+def convert_ips_to_file(ip_addresses, output_file):
+    with open(output_file, 'w') as f:
+        for ip in ip_addresses:
+            scanned_result = scan_ports(ip)
+            location = get_location(ip)
+            if scanned_result and location:
+                ip_address, open_ports = scanned_result
+                port_string = ','.join(map(str, open_ports))
+                f.write(f"{ip_address}:{port_string}#{location}\n")
+            elif scanned_result:
+                ip_address, open_ports = scanned_result
+                port_string = ','.join(map(str, open_ports))
+                f.write(f"{ip_address}:{port_string}\n")
+            elif location:
+                f.write(f"{ip}#{location}\n")
 
 if __name__ == "__main__":
-    input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf",
-                  'https://raw.githubusercontent.com/China-xb/zidonghuaip/main/ip.txt',
-                  'https://addressesapi.090227.xyz/CloudFlareYes',
-                  'https://kzip.pages.dev/kzip.txt?token=mimausb8']  # 包含IP地址的txt文件的多个URL
-    output_files = ["bestproxy.txt", "bestcf.txt", 'ip.txt', 'pure.txt', 'kzip.txt']
+    input_urls = ["https://example.com/ip_addresses.html", "https://anotherexample.com/ips.txt"]
+    output_file = "ip_results.txt"
 
-    convert_ips(input_urls, output_files)
+    all_ipv4_addresses = []
+    for url in input_urls:
+        ipv4_addresses = get_ipv4_addresses_from_url(url)
+        all_ipv4_addresses.extend(ipv4_addresses)
+
+    convert_ips_to_file(all_ipv4_addresses, output_file)
