@@ -28,14 +28,14 @@ def get_ips_from_url(url):
         print(f"Error fetching IPs from {url}: {e}")
     return []
 
-def get_location(ip):
+def get_region(ip):
     try:
         response = requests.get(f"http://ip-api.com/json/{ip}", timeout=3)  # 设置地区定位的超时为3秒
         data = response.json()
         if data['status'] == 'success':
-            return data['countryCode']
+            return data['regionName']
     except Exception as e:
-        print(f"Error fetching location for IP {ip}: {e}")
+        print(f"Error fetching region for IP {ip}: {e}")
     return "Unknown"
 
 def convert_ips(input_urls, output_files):
@@ -46,14 +46,14 @@ def convert_ips(input_urls, output_files):
             with open(output_file, 'w') as f:
                 for ip in ips:
                     open_port = scan_ports(ip)
-                    location = get_location(ip)
+                    region = get_region(ip)
                     if open_port is not None:
-                        f.write(f"{ip}:{open_port}#{location}\n")
+                        f.write(f"{ip}:{open_port}#{region}\n")
                     else:
-                        if location == "Unknown":
+                        if region == "Unknown":
                             f.write(f"{ip}#No geolocation detected\n")
                         else:
-                            f.write(f"{ip}#{location}\n")
+                            f.write(f"{ip}#{region}\n")
 
 if __name__ == "__main__":
     input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf", 'https://raw.githubusercontent.com/China-xb/zidonghuaip/main/ip.txt', 'https://kzip.pages.dev/kzip.txt?token=mimausb8', 'https://addressesapi.090227.xyz/CloudFlareYes']  # 包含IP地址的txt文件的多个URL
