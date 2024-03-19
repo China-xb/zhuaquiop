@@ -1,6 +1,6 @@
 47.242.59.216:443#Unknown
 47.243.179.249:443#Unknown
-140.238.13.96:443#Unknown
+140.238.13.96#No geolocation detected
 152.70.237.179:443#Unknown
 168.138.50.249:443#Unknown
 138.2.36.216:443#Unknown
