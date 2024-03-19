@@ -9,9 +9,9 @@ def get_ipv4_addresses_from_url(url):
             ipv4_addresses = re.findall(r'\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b', response.text)
             return ipv4_addresses
         else:
-            print(f"Failed to fetch IPv4 addresses from {url}. Status code: {response.status_code}")
+            print(f"无法从 {url} 获取IPv4地址。状态码: {response.status_code}")
     except Exception as e:
-        print(f"Error fetching IPv4 addresses from {url}: {e}")
+        print(f"获取来自 {url} 的IPv4地址时发生错误：{e}")
     return []
 
 def get_location(ip):
@@ -22,11 +22,11 @@ def get_location(ip):
             if data['status'] == 'success':
                 return f"{data['country']}"
             else:
-                print(f"Error fetching location for IP {ip}: Status: {data['status']}")
+                print(f"获取IP {ip} 的位置信息时出错：状态: {data['status']}")
         else:
-            print(f"Error fetching location for IP {ip}: Status code {response.status_code}")
+            print(f"获取IP {ip} 的位置信息时出错：状态码 {response.status_code}")
     except Exception as e:
-        print(f"Error fetching location for IP {ip}: {e}")
+        print(f"获取IP {ip} 的位置信息时出错：{e}")
     return None
 
 def scan_ports(ip_address):
@@ -38,31 +38,28 @@ def scan_ports(ip_address):
             result = s.connect_ex((ip_address, port))
             if result == 0:
                 open_ports.append(port)
-                break
             s.close()
     except socket.error as e:
-        print(f"Error scanning ports for IP {ip_address}: {e}")
+        print(f"扫描IP {ip_address} 的端口时出错：{e}")
 
-    if open_ports:
-        return (ip_address, open_ports)
-    else:
-        return None
+    return open_ports
 
 def convert_ips_to_file(ip_addresses, output_file):
     with open(output_file, 'w') as f:
         for ip in ip_addresses:
-            scanned_result = scan_ports(ip)
+            open_ports = scan_ports(ip)
             location = get_location(ip)
-            if scanned_result and location:
-                ip_address, open_ports = scanned_result
-                port_string = ','.join(map(str, open_ports))
-                f.write(f"{ip_address}:{port_string}#{location}\n")
-            elif scanned_result:
-                ip_address, open_ports = scanned_result
-                port_string = ','.join(map(str, open_ports))
-                f.write(f"{ip_address}:{port_string}\n")
-            elif location:
-                f.write(f"{ip}#{location}\n")
+            
+            if location:
+                if open_ports:
+                    port_string = ','.join(map(str, open_ports))
+                    f.write(f"{ip}:{port_string}#{location}\n")
+                else:
+                    f.write(f"{ip}#{location}\n")
+            else:
+                if open_ports:
+                    port_string = ','.join(map(str, open_ports))
+                    f.write(f"{ip}:{port_string}\n")
 
 if __name__ == "__main__":
     input_urls = ["https://example.com/ip_addresses.html", "https://anotherexample.com/ips.txt"]
