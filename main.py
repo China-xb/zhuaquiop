@@ -47,7 +47,7 @@ def convert_ips(input_urls, output_files, ports):
                 if location is not None:
                     f.write(f"{ip_address}:{ip_port}#{location}\n")
                 else:
-                    f.write(f"{ip_address}:{ip_port}#Unknown\n")
+                    f.write(f"{ip_address}:{ip_port}#火星⭐\n")
 
 if __name__ == "__main__":
     input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf", 'https://raw.githubusercontent.com/China-xb/zidonghuaip/main/ip.txt', 'https://addressesapi.090227.xyz/CloudFlareYes' , 'https://kzip.pages.dev/kzip.txt?token=mimausb8']
