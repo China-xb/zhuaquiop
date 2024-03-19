@@ -14,7 +14,7 @@ def get_ips_from_url(url):
 
 def get_location(ip):
     try:
-        response = requests.get(f"http://ip-api.com/json/{ip}")
+        response = requests.get(f"https://ipleak.net/{ip}")
         data = response.json()
         if data['status'] == 'success':
             return data['countryCode']
