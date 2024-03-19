@@ -1,7 +1,5 @@
 import requests
 import socket
-import requests
-from bs4 import BeautifulSoup
 
 def get_ips_from_url(url):
     try:
@@ -14,47 +12,50 @@ def get_ips_from_url(url):
         print(f"Error fetching IPs from {url}: {e}")
     return []
 
-
 def get_location(ip):
     try:
-        response = requests.get(f"https://ipleak.net/{ip}")
-        if response.status_code == 200:
-            soup = BeautifulSoup(response.text, 'html.parser')
-            country_code = soup.find('span', class_='country').get_text()
-            return country_code
+        response = requests.get(f"http://ip-api.com/json/{ip}")
+        data = response.json()
+        if data['status'] == 'success':
+            return data['countryCode']
     except Exception as e:
         print(f"Error fetching location for IP {ip}: {e}")
     return None
 
-def scan_ports(ip, ports):
-    for port in ports:
+def scan_ports(ip):
+    open_ports = []
+    for port in [8443, 2053, 2083, 2087]:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(1)  # 设置超时时间为1秒
+        s.settimeout(1)
         result = s.connect_ex((ip, port))
-        s.close()
         if result == 0:
-            return port
-    return 443  # 如果所有端口都未开放，默认使用443端口
+            open_ports.append(port)
+            break
+    if not open_ports:
+        open_ports.append(443)
+    return open_ports
 
-def convert_ips(input_urls, output_files, ports):
+def convert_ips(input_urls, output_files):
     for input_url, output_file in zip(input_urls, output_files):
-        ips = get_ips_from_url(input_url)
+        ips = get_ips_from_url(input_url)  # 获取URL中的IP地址列表
 
         with open(output_file, 'w') as f:
-            for ip in ips:
-                ip_parts = ip.split(':')
-                ip_address = ip_parts[0]
-                ip_port = ip_parts[1] if len(ip_parts) > 1 else '443'  # 将端口设置为字符串
-                ip_port = int(ip_port.split('#')[0])  # 提取端口号部分并转换为整数
+            for line in ips:
+                ip = line.split()[0]  # 提取行中的第一个单词作为IP地址
+                try:
+                    socket.inet_aton(ip)  # 检查IP地址格式是否正确
+                except socket.error:
+                    f.write(f"{line}\n")  # IP地址格式不正确，直接保存原文
+                    continue
                 
-                location = get_location(ip_address)
-                if location is not None:
-                    f.write(f"{ip_address}:{ip_port}#{location}\n")
+                open_ports = scan_ports(ip)
+                location = get_location(ip)
+                if location:
+                    f.write(f"{ip}:{open_ports[0]}:{location}\n")
                 else:
-                    f.write(f"{ip_address}:{ip_port}#火星⭐\n")
+                    f.write(f"{ip}:443:Unknown\n")
 
 if __name__ == "__main__":
-    input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf", 'https://raw.githubusercontent.com/China-xb/zidonghuaip/main/ip.txt', 'https://addressesapi.090227.xyz/CloudFlareYes' , 'https://kzip.pages.dev/kzip.txt?token=mimausb8']
+    input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf", 'https://raw.githubusercontent.com/China-xb/zidonghuaip/main/ip.txt', 'https://addressesapi.090227.xyz/CloudFlareYes' , 'https://kzip.pages.dev/kzip.txt?token=mimausb8']  # 包含IP地址的txt文件的多个URL
     output_files = ["bestproxy.txt", "bestcf.txt", 'ip.txt', 'cfip.txt', 'kzip.txt']
-    ports = [443, 8443, 2053, 2083, 2087, 2096]
-    convert_ips(input_urls, output_files, ports)
+    convert_ips(input_urls, output_files)
