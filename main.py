@@ -6,7 +6,7 @@ def scan_ports(ip):
     ports_to_scan = [443, 2053, 2087, 2083, 8443, 2096]
     for port in ports_to_scan:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(30)  # 设置端口扫描超时为30秒
+        s.settimeout(3)  # 设置端口扫描超时为3秒
         try:
             result = s.connect_ex((ip, port))
             if result == 0:
@@ -19,7 +19,7 @@ def scan_ports(ip):
 
 def get_ips_from_url(url):
     try:
-        response = requests.get(url, timeout=30)  # 设置获取IP地址的超时为30秒
+        response = requests.get(url, timeout=3)  # 设置获取IP地址的超时为3秒
         if response.status_code == 200:
             return response.text.splitlines()
         else:
@@ -30,7 +30,7 @@ def get_ips_from_url(url):
 
 def get_location(ip):
     try:
-        response = requests.get(f"http://ip-api.com/json/{ip}", timeout=30)  # 设置地区定位的超时为30秒
+        response = requests.get(f"http://ip-api.com/json/{ip}", timeout=3)  # 设置地区定位的超时为3秒
         data = response.json()
         if data['status'] == 'success':
             return data['countryCode']
@@ -39,7 +39,7 @@ def get_location(ip):
     return "Unknown"
 
 def convert_ips(input_urls, output_files):
-    with ThreadPoolExecutor(max_workers=10) as executor:
+    with ThreadPoolExecutor(max_workers=10) as executor:  # 使用线程池进行并发处理
         for input_url, output_file in zip(input_urls, output_files):
             ips = get_ips_from_url(input_url)  # 获取URL中的IP地址列表
 
