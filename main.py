@@ -1,27 +1,39 @@
 import requests
 import socket
 from concurrent.futures import ThreadPoolExecutor
+from bs4 import BeautifulSoup
+import re
+
+def extract_ips_from_html(html_content):
+    # 使用BeautifulSoup解析HTML内容，提取IP地址
+    soup = BeautifulSoup(html_content, 'html.parser')
+    # 使用正则表达式匹配IP地址的模式
+    ip_pattern = r"\b(?:[0-9]{1,3}\.){3}[0-9]{1,3}\b"
+    # 查找所有文本中匹配IP地址模式的部分
+    ips = re.findall(ip_pattern, soup.get_text())
+    return ips
 
 def scan_ports(ip):
     ports_to_scan = [443, 2053, 2087, 2083, 8443, 2096]
     for port in ports_to_scan:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(3)  # 设置端口扫描超时为3秒
-        try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.settimeout(3)
             result = s.connect_ex((ip, port))
             if result == 0:
-                s.close()
                 return port
-        except Exception as e:
-            print(f"Error scanning port {port} for IP {ip}: {e}")
-        s.close()
     return None
 
 def get_ips_from_url(url):
     try:
-        response = requests.get(url, timeout=3)  # 设置获取IP地址的超时为3秒
+        response = requests.get(url)
         if response.status_code == 200:
-            return response.text.splitlines()
+            if "text/html" in response.headers.get("content-type", ""):
+                # 如果是HTML内容，则提取其中的IP地址
+                ips = extract_ips_from_html(response.content)
+            else:
+                # 否则按行分割文本获取IP地址
+                ips = response.text.splitlines()
+            return ips
         else:
             print(f"Failed to fetch IPs from {url}. Status code: {response.status_code}")
     except Exception as e:
@@ -30,33 +42,33 @@ def get_ips_from_url(url):
 
 def get_location(ip):
     try:
-        response = requests.get(f"http://ip-api.com/json/{ip}", timeout=3)  # 设置地区定位的超时为3秒
+        response = requests.get(f"http://ip-api.com/json/{ip}")
         data = response.json()
         if data['status'] == 'success':
-            return data['regionName']
+            return data['countryCode']
     except Exception as e:
         print(f"Error fetching location for IP {ip}: {e}")
     return "Unknown"
 
 def convert_ips(input_urls, output_files):
-    with ThreadPoolExecutor(max_workers=10) as executor:  # 使用线程池进行并发处理
+    with ThreadPoolExecutor(max_workers=10) as executor:
         for input_url, output_file in zip(input_urls, output_files):
             ips = get_ips_from_url(input_url)  # 获取URL中的IP地址列表
 
             with open(output_file, 'w') as f:
                 for ip in ips:
                     try:
-                        region = get_location(ip)  # 获取IP地址的地区信息
+                        country_code = get_location(ip)  # 获取IP地址的国家代码信息
                         open_port = scan_ports(ip)  # 扫描IP地址的开放端口
                         if open_port is not None:
-                            f.write(f"{ip}:{open_port}#{region}\n")  # 保存带有开放端口和地区信息的格式
+                            f.write(f"{ip}:{open_port}#{country_code}\n")  # 保存带有开放端口和国家代码信息的格式
                         else:
-                            if region == "Unknown":
+                            if country_code == "Unknown":
                                 f.write(f"{ip}#No geolocation detected\n")  # 保存未检测到地理位置的格式
                             else:
-                                f.write(f"{ip}#{region}\n")  # 保存带有地区信息但未开放端口的格式
+                                f.write(f"{ip}#{country_code}\n")  # 保存带有国家代码信息但未开放端口的格式
                     except Exception as e:
-                        f.write(f"{ip}:443#Error occurred: {e}\n")  # 保存出现异常的IP地址及错误信息
+                        f.write(f"{ip}#Error occurred: {e}\n")  # 保存出现异常的IP地址及错误信息
 
 if __name__ == "__main__":
     input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf", 'https://raw.githubusercontent.com/China-xb/zidonghuaip/main/ip.txt', 'https://kzip.pages.dev/kzip.txt?token=mimausb8', 'https://addressesapi.090227.xyz/CloudFlareYes']  # 包含IP地址的txt文件的多个URL
