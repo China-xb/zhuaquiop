@@ -53,7 +53,7 @@ def convert_ips(input_urls, output_files):
                 if location:
                     f.write(f"{ip}:{open_ports[0]}:{location}\n")
                 else:
-                    f.write(f"{ip}:443:Unknown\n")
+                    f.write(f"{ip}:443:火星⭐\n")
 
 if __name__ == "__main__":
     input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf", 'https://raw.githubusercontent.com/China-xb/zidonghuaip/main/ip.txt', 'https://addressesapi.090227.xyz/CloudFlareYes' , 'https://kzip.pages.dev/kzip.txt?token=mimausb8']  # 包含IP地址的txt文件的多个URL
