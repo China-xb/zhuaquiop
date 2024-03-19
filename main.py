@@ -31,7 +31,7 @@ if __name__ == "__main__":
     all_ips_ports = []
     updates = await bot.get_updates()
     for update in updates:
-    ips_ports = extract_info_from_message(update.message.text)
+        ips_ports = extract_info_from_message(update.message.text)
         all_ips_ports.extend(ips_ports)
     write_ips_to_file(all_ips_ports, 'tg.txt')
 
