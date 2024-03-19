@@ -1,6 +1,5 @@
 import requests
 import socket
-import time
 
 def get_ips_from_url(url):
     try:
@@ -21,7 +20,7 @@ def get_location(ip):
             return data['countryCode']
     except Exception as e:
         print(f"Error fetching location for IP {ip}: {e}")
-    return "Unknown"
+    return None
 
 def scan_ports(ip, ports):
     for port in ports:
@@ -44,7 +43,7 @@ def convert_ips(input_urls, output_files, ports):
                 ip_port = int(ip_parts[1]) if len(ip_parts) > 1 else scan_ports(ip_address, ports)
                 
                 location = get_location(ip_address)
-                if location:
+                if location is not None:
                     f.write(f"{ip_address}:{ip_port}#{location}\n")
                 else:
                     f.write(f"{ip_address}:{ip_port}#Unknown\n")
