@@ -4,6 +4,39 @@ from concurrent.futures import ThreadPoolExecutor
 from bs4 import BeautifulSoup
 import re
 
+
+
+from telegram import Bot
+from telegram import Update
+import re
+
+def extract_info_from_message(message):
+    # 使用正则表达式匹配IP地址和端口的模式
+    ip_port_pattern = r"b(?:[0-9]{1,3}.){3}[0-9]{1,3}:d{4}b"
+    # 查找所有文本中匹配IP地址和端口的部分
+    ip_ports = re.findall(ip_port_pattern, message)
+    return ip_ports
+
+def write_ips_to_file(ip_ports, file_path):
+    with open(file_path, 'w') as f:
+        for ip_port in ip_ports:
+            f.write(f"{ip_port}n")
+
+if __name__ == "__main__":
+    bot_token = "6701932453:AAE2hVVH1WGvHeLxHX-m2laWqnKgz9FD4Dg"
+    channel_username = "cf_no1"
+    bot = Bot(token=bot_token)
+    updates = bot.get_updates(limit=3, timeout=10)
+
+    all_ips_ports = []
+    for update in updates:
+        ips_ports = extract_info_from_message(update.message.text)
+        all_ips_ports.extend(ips_ports)
+    
+    write_ips_to_file(all_ips_ports, 'tg.txt')
+
+
+
 def extract_ips_from_html(html_content):
     # 使用BeautifulSoup解析HTML内容，提取IP地址
     soup = BeautifulSoup(html_content, 'html.parser')
