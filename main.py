@@ -10,8 +10,9 @@ def get_ips_from_url(url):
         print(f"Failed to fetch IPs from {url}. Status code: {response.status_code}")
     return []
 
-def get_country_from_ipleak(url):
-    response = requests.get(url)
+def get_country_from_ipleak(ip):
+    url = "https://ipleak.net/"
+    response = requests.get(url, proxies={"http": f"http://{ip}:8080", "https": f"https://{ip}:8080"})
     if response.status_code == 200:
         html = response.text
         country_code = None
@@ -55,7 +56,7 @@ def convert_ips(input_urls, output_files):
                     continue
 
                 open_ports = scan_ports(ip)
-                country_code = get_country_from_ipleak("https://ipleak.net/")
+                country_code = get_country_from_ipleak(ip)
                 f.write(f"{ip}:{open_ports[0]}#{country_code}\n")
 
 if __name__ == "__main__":
