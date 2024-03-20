@@ -1,32 +1,25 @@
-import re
 import requests
 import socket
 
 def get_ips_from_url(url):
-    response = requests.get(url)
-    if response.status_code == 200:
-        return response.text.splitlines()
-    else:
-        print(f"Failed to fetch IPs from {url}. Status code: {response.status_code}")
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            return response.text.splitlines()
+        else:
+            print(f"Failed to fetch IPs from {url}. Status code: {response.status_code}")
+    except Exception as e:
+        print(f"Error fetching IPs from {url}: {e}")
     return []
 
-def get_country_from_ipleak(ip):
-    url = f"https://ipleak.net/{ip}"
-    response = requests.get(url)
-    if response.status_code == 200:
-        html = response.text
-        country_code = None
-        try:
-            country_element = re.search(r'<span class="flag-icon flag-icon-([a-zA-Z]+)"', html)
-            if country_element:
-                country_code = country_element.group(1).upper()
-            else:
-                print(f"Failed to extract country code from {url}. Country code not found.")
-        except IndexError:
-            print(f"Failed to extract country code from {url}. Country code not found.")
-        return country_code
-    else:
-        print(f"Failed to fetch country from {url}. Status code: {response.status_code}")
+def get_location(ip):
+    try:
+        response = requests.get(f"http://ip-api.com/json/{ip}")
+        data = response.json()
+        if data['status'] == 'success':
+            return data['countryCode']
+    except Exception as e:
+        print(f"Error fetching location for IP {ip}: {e}")
     return None
 
 def scan_ports(ip):
@@ -44,22 +37,25 @@ def scan_ports(ip):
 
 def convert_ips(input_urls, output_files):
     for input_url, output_file in zip(input_urls, output_files):
-        ips = get_ips_from_url(input_url)
+        ips = get_ips_from_url(input_url)  # 获取URL中的IP地址列表
 
         with open(output_file, 'w') as f:
             for line in ips:
-                ip = line.split()[0]
+                ip = line.split()[0]  # 提取行中的第一个单词作为IP地址
                 try:
-                    socket.inet_aton(ip)
+                    socket.inet_aton(ip)  # 检查IP地址格式是否正确
                 except socket.error:
-                    f.write(f"{line}\n")
+                    f.write(f"{line}\n")  # IP地址格式不正确，直接保存原文
                     continue
 
                 open_ports = scan_ports(ip)
-                country_code = get_country_from_ipleak(ip)
-                f.write(f"{ip}:{open_ports[0]}#{country_code}\n")
+                location = get_location(ip)
+                if location:
+                    f.write(f"{ip}:{open_ports[0]}#{location}\n")
+                else:
+                    f.write(f"{ip}:443#火星⭐\n")
 
 if __name__ == "__main__":
-    input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf", 'https://raw.githubusercontent.com/China-xb/zidonghuaip/main/ip.txt', 'https://addressesapi.090227.xyz/CloudFlareYes' , 'https://kzip.pages.dev/kzip.txt?token=mimausb8']  # 包含 IP 地址的 txt 文件的多个 URL
+    input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf", 'https://raw.githubusercontent.com/China-xb/zidonghuaip/main/ip.txt', 'https://addressesapi.090227.xyz/CloudFlareYes' , 'https://kzip.pages.dev/kzip.txt?token=mimausb8']  # 包含IP地址的txt文件的多个URL
     output_files = ["bestproxy.txt", "bestcf.txt", 'ip.txt', 'cfip.txt', 'kzip.txt']
     convert_ips(input_urls, output_files)
