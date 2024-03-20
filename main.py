@@ -28,7 +28,6 @@ def get_country_from_ipleak(ip):
     else:
         print(f"Failed to fetch country from {url}. Status code: {response.status_code}")
     return None
-```
 
 def scan_ports(ip):
     open_ports = []
