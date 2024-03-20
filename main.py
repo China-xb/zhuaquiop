@@ -1,3 +1,4 @@
+import re
 import requests
 import socket
 
@@ -15,8 +16,11 @@ def get_country_from_ipleak(url):
         html = response.text
         country_code = None
         try:
-            country_element = html.split('<span class="flag-icon flag-icon-')[1].split('"')[0]
-            country_code = country_element.split('-')[1].upper()
+            country_element = re.search(r'<span class="flag-icon flag-icon-([a-zA-Z]+)"', html)
+            if country_element:
+                country_code = country_element.group(1).upper()
+            else:
+                print(f"Failed to extract country code from {url}. Country code not found.")
         except IndexError:
             print(f"Failed to extract country code from {url}. Country code not found.")
         return country_code
