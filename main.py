@@ -11,8 +11,8 @@ def get_ips_from_url(url):
     return []
 
 def get_country_from_ipleak(ip):
-    url = "https://ipleak.net/"
-    response = requests.get(url, proxies={"http": f"http://{ip}:8080", "https": f"https://{ip}:8080"})
+    url = f"https://ipleak.net/{ip}"
+    response = requests.get(url)
     if response.status_code == 200:
         html = response.text
         country_code = None
@@ -28,6 +28,7 @@ def get_country_from_ipleak(ip):
     else:
         print(f"Failed to fetch country from {url}. Status code: {response.status_code}")
     return None
+```
 
 def scan_ports(ip):
     open_ports = []
