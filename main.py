@@ -13,8 +13,12 @@ def get_country_from_ipleak(url):
     response = requests.get(url)
     if response.status_code == 200:
         html = response.text
-        country_element = html.split('<span class="flag-icon flag-icon-')[1].split('"')[0]
-        country_code = country_element.split('-')[1].upper()
+        country_code = None
+        try:
+            country_element = html.split('<span class="flag-icon flag-icon-')[1].split('"')[0]
+            country_code = country_element.split('-')[1].upper()
+        except IndexError:
+            print(f"Failed to extract country code from {url}. Country code not found.")
         return country_code
     else:
         print(f"Failed to fetch country from {url}. Status code: {response.status_code}")
