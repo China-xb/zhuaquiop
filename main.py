@@ -14,10 +14,10 @@ def get_ips_from_url(url):
 
 def get_location(ip):
     try:
-        response = requests.get(f"https://ipleak.net/json/{ip}")
+        response = requests.get(f"http://ip-api.com/json/{ip}")
         data = response.json()
         if data['status'] == 'success':
-            return data['country_code']
+            return data['countryCode']
     except Exception as e:
         print(f"Error fetching location for IP {ip}: {e}")
     return None
