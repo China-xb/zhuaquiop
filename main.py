@@ -17,7 +17,7 @@ def get_location(ip):
         response = requests.get(f"https://ipleak.net/json/{ip}")
         data = response.json()
         if data['status'] == 'success':
-            return data['ccountry_code']
+            return data['country_code']
     except Exception as e:
         print(f"Error fetching location for IP {ip}: {e}")
     return None
