@@ -67,6 +67,28 @@ def convert_ips(input_urls, output_files):
         # 等待所有任务完成
         ip_queue.join()
 
+# 定义从 URL 中提取 IP 地址的函数
+def get_ips_from_url(input_url):
+    """从给定的 URL 中提取 IP 地址。
+
+    参数：
+        input_url (str): 包含 IP 地址的文本文件的 URL。
+
+    返回：
+        list[str]: 从 URL 中提取的 IP 地址列表。
+    """
+
+    ips = []
+    try:
+        response = requests.get(input_url)
+        for line in response.text.splitlines():
+            ip = line.split()[0]
+            ips.append(ip)
+    except Exception as e:
+        print(f"Error fetching IP addresses from URL {input_url}: {e}")
+
+    return ips
+
 if __name__ == "__main__":
     input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf", 'https://raw.githubusercontent.com/China-xb/zidonghuaip/main/ip.txt', 'https://addressesapi.090227.xyz/CloudFlareYes' , 'https://kzip.pages.dev/a.csv?token=mimausb8']  # 包含IP地址的txt文件的多个URL
     output_files = ["bestproxy.txt", "bestcf.txt", 'ip.txt', 'cfip.txt', 'kzip.txt']
