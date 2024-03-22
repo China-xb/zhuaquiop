@@ -1,5 +1,11 @@
 import requests
 import socket
+import re
+
+def is_valid_ipv4(ip):
+    """Check if the IP address is a valid IPv4 address."""
+    pattern = re.compile(r'^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?))')
+    return pattern.match(ip) is not None
 
 def get_ips_from_url(url):
     try:
@@ -13,34 +19,28 @@ def get_ips_from_url(url):
     return []
 
 def get_location(ip):
+    """Get the country code for a single IP address."""
     try:
         response = requests.get(f"http://ip-api.com/json/{ip}")
         data = response.json()
         if data['status'] == 'success':
             return data['countryCode']
-        elif data['status'] == 'fail':
-            pass  # 尝试使用备用 API
     except Exception as e:
         print(f"Error fetching location for IP {ip} using ip-api.com: {e}")
-
-    try:
-        response = requests.get(f"https://ipleak.net/json/{ip}")
-        data = response.json()
-        return data['country']
-    except Exception as e:
-        print(f"Error fetching location for IP {ip} using ipleak.net: {e}")
-
     return "火星star"
 
 def scan_ports(ip):
     open_ports = []
-    for port in [8443, 2053, 2083, 2087]:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(1)
-        result = s.connect_ex((ip, port))
-        if result == 0:
-            open_ports.append(port)
-            break
+    try:
+        for port in [8443, 2053, 2083, 2087]:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.settimeout(1)
+            result = s.connect_ex((ip, port))
+            if result == 0:
+                open_ports.append(port)
+                break
+    except socket.gaierror as e:
+        print(f"Error scanning ports for IP {ip}: {e}")
     if not open_ports:
         open_ports.append(443)
     return open_ports
@@ -52,13 +52,16 @@ def convert_ips(input_urls, output_files):
     for input_url in input_urls:
         all_ips.extend(get_ips_from_url(input_url))
 
-    # 对每个 IP 地址进行国家代码定位和端口验证
+    # 对每个 IP 地址进行处理
     for ip in all_ips:
-        location = get_location(ip)
-        open_ports = scan_ports(ip)
+        if is_valid_ipv4(ip):
+            location = get_location(ip)
+            open_ports = scan_ports(ip)
 
-        # 格式化保存信息
-        info = f"{ip}:{open_ports[0]}#{location}\n" if open_ports else f"{ip}#火星star\n"
+            # 格式化保存信息
+            info = f"{ip}:{open_ports[0]}#{location}\n"
+        else:
+            info = f"{ip}:#\n"  # 对于不符合IPv4的地址，保存格式为IP:##
 
         # 保存信息到对应的文件
         for output_file in output_files:
