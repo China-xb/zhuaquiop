@@ -36,16 +36,19 @@ def scan_ports(ip):
     return open_ports
 
 def convert_ips(input_urls, output_files):
-    for input_url, output_file in zip(input_urls, output_files):
-        ips = get_ips_from_url(input_url)  # 获取URL中的IP地址列表
+    ips = []
+    for input_url in input_urls:
+        ips += get_ips_from_url(input_url)
 
+    ips = set(ips)  # 去重
+
+    for output_file in output_files:
         with open(output_file, 'w') as f:
-            for line in ips:
-                ip = line.split()[0]  # 提取行中的第一个单词作为IP地址
+            for ip in ips:
                 try:
                     socket.inet_aton(ip)  # 检查IP地址格式是否正确
                 except socket.error:
-                    f.write(f"{line}\n")  # IP地址格式不正确，直接保存原文
+                    f.write(f"{ip}\n")  # IP地址格式不正确，直接保存原文
                     continue
 
                 open_ports = scan_ports(ip)
