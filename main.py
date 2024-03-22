@@ -1,41 +1,41 @@
 import requests
 import socket
-import queue
-import threading
+from bs4 import BeautifulSoup
 
-# 创建一个队列来存储要获取国家代码的 IP 地址
-ip_queue = queue.Queue()
+def get_ips_from_url(url):
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            return response.text.splitlines()
+        else:
+            print(f"Failed to fetch IPs from {url}. Status code: {response.status_code}")
+    except Exception as e:
+        print(f"Error fetching IPs from {url}: {e}")
+    return []
 
-# 创建一个线程池来获取国家代码
-thread_pool = []
-for i in range(50):  # 根据需要调整线程数
-    thread = threading.Thread(target=get_country_code, args=(ip_queue,))
-    thread_pool.append(thread)
-
-# 定义 get_country_code 函数
-def get_country_code(ip_queue):
-    while True:
-        try:
-            ip = ip_queue.get()
-            location = get_location(ip)
-            ip_queue.task_done()  # 标记任务完成
-            if location:
-                print(f"{ip}: {location}")
-        except Exception as e:
-            print(f"Error getting country code for IP {ip}: {e}")
-
-# 定义 get_location 函数
 def get_location(ip):
+    try:
+        # 尝试使用 http://whois.pconline.com.cn/ipJson.jsp? 作为备用方法
+        response = requests.get(f"http://whois.pconline.com.cn/ipJson.jsp?ip={ip}")
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.text, "html.parser")
+            font_element = soup.find("font")
+            font_content = font_element.text
+            location = font_content.split('"pro": "')[1].split('"')[0]
+            return location
+    except Exception as e:
+        print(f"Error fetching location for IP {ip} using http://whois.pconline.com.cn/ipJson.jsp?: {e}")
+
+    # 如果备用方法失败，则使用 ip-api.com 作为后备
     try:
         response = requests.get(f"http://ip-api.com/json/{ip}")
         data = response.json()
         if data['status'] == 'success':
             return data['countryCode']
     except Exception as e:
-        print(f"Error fetching location for IP {ip}: {e}")
+        print(f"Error fetching location for IP {ip} using ip-api.com: {e}")
     return None
 
-# 定义扫描端口的函数
 def scan_ports(ip):
     open_ports = []
     for port in [8443, 2053, 2083, 2087, 2096]:
@@ -48,7 +48,6 @@ def scan_ports(ip):
         open_ports.append(443)
     return open_ports
 
-# 定义转换 IP 的函数
 def convert_ips(input_urls, output_files):
     for input_url, output_file in zip(input_urls, output_files):
         ips = get_ips_from_url(input_url)
@@ -62,32 +61,13 @@ def convert_ips(input_urls, output_files):
                     f.write(f"{line}\n")
                     continue
 
-                ip_queue.put(ip)
+                location = get_location(ip)
+                open_ports = scan_ports(ip)
 
-        # 等待所有任务完成
-        ip_queue.join()
-
-# 定义从 URL 中提取 IP 地址的函数
-def get_ips_from_url(input_url):
-    """从给定的 URL 中提取 IP 地址。
-
-    参数：
-        input_url (str): 包含 IP 地址的文本文件的 URL。
-
-    返回：
-        list[str]: 从 URL 中提取的 IP 地址列表。
-    """
-
-    ips = []
-    try:
-        response = requests.get(input_url)
-        for line in response.text.splitlines():
-            ip = line.split()[0]
-            ips.append(ip)
-    except Exception as e:
-        print(f"Error fetching IP addresses from URL {input_url}: {e}")
-
-    return ips
+                if location:
+                    f.write(f"{ip}:{open_ports[0]}#{location}\n")
+                else:
+                    f.write(f"{ip}:443#火星⭐\n")
 
 if __name__ == "__main__":
     input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf", 'https://raw.githubusercontent.com/China-xb/zidonghuaip/main/ip.txt', 'https://addressesapi.090227.xyz/CloudFlareYes' , 'https://kzip.pages.dev/a.csv?token=mimausb8']  # 包含IP地址的txt文件的多个URL
