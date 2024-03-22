@@ -1,25 +1,24 @@
 import requests
 import socket
 
-def get_ips_from_url(url):
-    try:
-        response = requests.get(url)
-        if response.status_code == 200:
-            return response.text.splitlines()
-        else:
-            print(f"Failed to fetch IPs from {url}. Status code: {response.status_code}")
-    except Exception as e:
-        print(f"Error fetching IPs from {url}: {e}")
-    return []
-
 def get_location(ip):
     try:
+        # 尝试使用 ip-api.com 获取国家代码
         response = requests.get(f"http://ip-api.com/json/{ip}")
         data = response.json()
         if data['status'] == 'success':
             return data['countryCode']
     except Exception as e:
-        print(f"Error fetching location for IP {ip}: {e}")
+        print(f"Error fetching location for IP {ip} using ip-api.com: {e}")
+
+    try:
+        # 如果 ip-api.com 获取不成功，则使用 ipleak.net 获取国家代码
+        response = requests.get("https://ipleak.net/json")
+        data = response.json()
+        return data['country_code']
+    except Exception as e:
+        print(f"Error fetching location for IP {ip} using ipleak.net: {e}")
+
     return None
 
 def scan_ports(ip):
@@ -36,24 +35,24 @@ def scan_ports(ip):
     return open_ports
 
 def convert_ips(input_urls, output_files):
-    ips = []
-    for input_url in input_urls:
-        ips += get_ips_from_url(input_url)
+    unique_ips = set()  # 使用集合来存储唯一的 IP 地址
 
-    ips = set(ips)  # 去重
+    for input_url in input_urls:
+        ips = get_ips_from_url(input_url)
+        unique_ips.update(ips)  # 添加新IP地址到集合中
 
     for output_file in output_files:
         with open(output_file, 'w') as f:
-            for ip in ips:
+            for ip in unique_ips:
                 try:
                     socket.inet_aton(ip)  # 检查IP地址格式是否正确
                 except socket.error:
                     f.write(f"{ip}\n")  # IP地址格式不正确，直接保存原文
                     continue
 
-                open_ports = scan_ports(ip)
                 location = get_location(ip)
                 if location:
+                    open_ports = scan_ports(ip)
                     f.write(f"{ip}:{open_ports[0]}#{location}\n")
                 else:
                     f.write(f"{ip}:443#火星⭐\n")
