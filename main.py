@@ -8,7 +8,7 @@ ip_queue = queue.Queue()
 
 # 创建一个线程池来获取国家代码
 thread_pool = []
-for i in range(50):  # 根据需要调整线程数
+for i in range(10):  # 根据需要调整线程数
     thread = threading.Thread(target=get_country_code, args=(ip_queue,))
     thread_pool.append(thread)
     thread.start()
