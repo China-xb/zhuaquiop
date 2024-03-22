@@ -17,7 +17,7 @@ def get_location(ip):
         response = requests.get(f"http://ip-api.com/json/{ip}")
         data = response.json()
         if data['status'] == 'success':
-            return data['country_code']
+            return data['countryCode']
         elif data['status'] == 'fail':
             pass  # 尝试使用备用 API
     except Exception as e:
@@ -30,7 +30,7 @@ def get_location(ip):
     except Exception as e:
         print(f"Error fetching location for IP {ip} using ipleak.net: {e}")
 
-    return None
+    return "火星star"
 
 def scan_ports(ip):
     open_ports = []
@@ -46,26 +46,26 @@ def scan_ports(ip):
     return open_ports
 
 def convert_ips(input_urls, output_files):
-    for input_url, output_file in zip(input_urls, output_files):
-        ips = get_ips_from_url(input_url)  # 获取URL中的IP地址列表
+    all_ips = []  # 存储所有 IP 地址
 
-        with open(output_file, 'w') as f:
-            for line in ips:
-                ip = line.split()[0]  # 提取行中的第一个单词作为IP地址
-                try:
-                    socket.inet_aton(ip)  # 检查IP地址格式是否正确
-                except socket.error:
-                    f.write(f"{line}\n")  # IP地址格式不正确，直接保存原文
-                    continue
+    # 获取所有 IP 地址
+    for input_url in input_urls:
+        all_ips.extend(get_ips_from_url(input_url))
 
-                open_ports = scan_ports(ip)
-                location = get_location(ip)
-                if location:
-                    f.write(f"{ip}:{open_ports[0]}#{location}\n")
-                else:
-                    f.write(f"{ip}:443#火星⭐\n")
+    # 对每个 IP 地址进行国家代码定位和端口验证
+    for ip in all_ips:
+        location = get_location(ip)
+        open_ports = scan_ports(ip)
+
+        # 格式化保存信息
+        info = f"{ip}:{open_ports[0]}#{location}\n" if open_ports else f"{ip}#火星star\n"
+
+        # 保存信息到对应的文件
+        for output_file in output_files:
+            with open(output_file, 'a') as f:
+                f.write(info)
 
 if __name__ == "__main__":
-    input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf", 'https://raw.githubusercontent.com/China-xb/zidonghuaip/main/ip.txt', 'https://addressesapi.090227.xyz/CloudFlareYes' , 'https://kzip.pages.dev/a.csv?token=mimausb8']  # 包含IP地址的txt文件的多个URL
+    input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf", 'https://raw.githubusercontent.com/China-xb/zidonghuaip/main/ip.txt', 'https://addressesapi.090227.xyz/CloudFlareYes' , 'https://kzip.pages.dev/a.csv?token=mimausb8']  # 包含IP地址的多个URL
     output_files = ["bestproxy.txt", "bestcf.txt", 'ip.txt', 'cfip.txt', 'kzip.txt']
     convert_ips(input_urls, output_files)
