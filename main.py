@@ -15,18 +15,24 @@ def get_ips_from_url(url):
 
 def get_location(ip):
     try:
-        # 尝试使用 http://whois.pconline.com.cn/ipJson.jsp? 作为备用方法
         response = requests.get(f"http://whois.pconline.com.cn/ipJson.jsp?ip={ip}")
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, "html.parser")
             font_element = soup.find("font")
-            font_content = font_element.text
-            location = font_content.split('"pro": "')[1].split('"')[0]
-            return location
+            if font_element is not None:
+                font_content = font_element.text
+                if '"pro": "' in font_content:
+                    location = font_content.split('"pro": "')[1].split('"')[0]
+                elif '"city": "' in font_content:
+                    location = font_content.split('"city": "')[1].split('"')[0]
+                else:
+                    location = "Location information not found"
+                return location
+            else:
+                print(f"Font element not found for IP {ip}")
     except Exception as e:
         print(f"Error fetching location for IP {ip} using http://whois.pconline.com.cn/ipJson.jsp?: {e}")
 
-    # 如果备用方法失败，则使用 ip-api.com 作为后备
     try:
         response = requests.get(f"http://ip-api.com/json/{ip}")
         data = response.json()
@@ -57,21 +63,18 @@ def convert_ips(input_urls, output_files):
                 ip = line.split()[0]
                 try:
                     socket.inet_aton(ip)
+                    location = get_location(ip)
+                    open_ports = scan_ports(ip)
+
+                    if location:
+                        f.write(f"{ip}:{open_ports[0]}#{location}\n")
+                    else:
+                        f.write(f"{ip}:443#火星⭐\n")
                 except socket.error:
                     f.write(f"{line}\n")
                     continue
-
-                location = get_location(ip)
-                open_ports = scan_ports(ip)
-
-                if location:
-                    f.write(f"{ip}:{open_ports[0]}#{location}\n")
-                else:
-                    f.write(f"{ip}:443#火星⭐\n")
 
 if __name__ == "__main__":
     input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf", 'https://raw.githubusercontent.com/China-xb/zidonghuaip/main/ip.txt', 'https://addressesapi.090227.xyz/CloudFlareYes' , 'https://kzip.pages.dev/a.csv?token=mimausb8']  # 包含IP地址的txt文件的多个URL
     output_files = ["bestproxy.txt", "bestcf.txt", 'ip.txt', 'cfip.txt', 'kzip.txt']
     convert_ips(input_urls, output_files)
-
-
