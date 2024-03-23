@@ -5,8 +5,8 @@ on:
     branches:
       - main
   schedule:
-    - cron: '0 */2 * * *'  # 每隔两小时触发一次
-  workflow_dispatch:  
+    - cron: '0 */2 * * *'  # Run every two hours
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -31,7 +31,7 @@ jobs:
         pip install beautifulsoup4
 
     - name: Run Conversion Script
-      run: python main.py  # 执行Python脚本进行IP地址转换
+      run: python main.py  # Execute Python script for IP address conversion
 
     - name: Commit Changes
       run: |
