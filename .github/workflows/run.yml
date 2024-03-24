@@ -4,11 +4,9 @@ on:
   push:
     branches:
       - main
+  schedule:
+    - cron: '0 */2 * * *'  # 每隔两小时触发一次
   workflow_dispatch:  
-  workflow_run:
-    workflows: ["*"]
-    types:
-      - completed
 
 permissions:
   contents: write
