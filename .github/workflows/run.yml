@@ -6,7 +6,7 @@ on:
       - main
   workflow_dispatch:  
   workflow_run:
-    workflows: ["Add Location of IP Addresses"]
+    workflows: ["*"]
     types:
       - completed
 
