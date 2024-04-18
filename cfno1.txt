@@ -1,8 +1,0 @@
-35.215.166.189,10014,HK-Google Cloud
-8.218.201.73,2083,HK-45102-Alibaba
-34.81.231.217,4443,TW-Google Cloud
-20.6.32.20,4431,SG-Microsoft Azure
-176.126.114.97,443,JP-xTom
-129.154.212.181,20309,KR-Oracle Cloud
-80.251.217.61,443,US-Fiber-logic
-
