@@ -1,77 +1,80 @@
 import requests
 import socket
 from bs4 import BeautifulSoup
-from concurrent.futures import ThreadPoolExecutor
-import concurrent.futures
-import geoip2.database
-
-# 初始化 GeoIP 数据库
-reader = geoip2.database.Reader('GeoLite2-City.mmdb')
 
 def get_ips_from_url(url):
     try:
         response = requests.get(url)
-        response.raise_for_status()  # 检查请求是否成功
-        return response.text.splitlines()
+        if response.status_code == 200:
+            return response.text.splitlines()
+        else:
+            print(f"Failed to fetch IPs from {url}. Status code: {response.status_code}")
     except Exception as e:
-        print(f"无法从 {url} 获取IP地址：{e}")
-        return []
+        print(f"Error fetching IPs from {url}: {e}")
+    return []
 
-def scan_ports(ip, port):
+def get_location(ip):
     try:
-        with socket.create_connection((ip, port), timeout=1) as s:
-            return port
-    except (socket.timeout, socket.error):
-        return None
+        response = requests.get(f"http://whois.pconline.com.cn/ipJson.jsp?ip={ip}")
+        if response.status_code == 200:
+            soup = BeautifulSoup(response.text, "html.parser")
+            font_element = soup.find("font")
+            if font_element is not None:
+                font_content = font_element.text
+                if '"pro": "' in font_content:
+                    location = font_content.split('"pro": "')[1].split('"')[0]
+                elif '"city": "' in font_content:
+                    location = font_content.split('"city": "')[1].split('"')[0]
+                else:
+                    location = "Location information not found"
+                return location
+            else:
+                print(f"Font element not found for IP {ip}")
+    except Exception as e:
+        print(f"Error fetching location for IP {ip} using http://whois.pconline.com.cn/ipJson.jsp?: {e}")
+
+    try:
+        response = requests.get(f"http://ip-api.com/json/{ip}")
+        data = response.json()
+        if data['status'] == 'success':
+            return data['countryCode']
+    except Exception as e:
+        print(f"Error fetching location for IP {ip} using ip-api.com: {e}")
+    return None
+
+def scan_ports(ip):
+    open_ports = []
+    for port in [8443, 2053, 2083, 2087, 2096]:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.settimeout(1)
+        result = s.connect_ex((ip, port))
+        if result == 0:
+            open_ports.append(port)
+    if not open_ports:
+        open_ports.append(443)
+    return open_ports
 
 def convert_ips(input_urls, output_files):
-    with ThreadPoolExecutor(max_workers=5) as executor:
-        for input_url, output_file in zip(input_urls, output_files):
-            ips = get_ips_from_url(input_url)
-            with open(output_file, 'w') as f:
-                for ip in ips:
-                    try:
-                        socket.inet_aton(ip)  # 检查IP地址的格式是否正确
-                        open_ports = []
+    for input_url, output_file in zip(input_urls, output_files):
+        ips = get_ips_from_url(input_url)
 
-                        if ":" in ip:
-                            parts = ip.split(":")
-                            ip = parts[0]
-                            open_ports = [int(p) for p in parts[1].split(",")]
+        with open(output_file, 'w') as f:
+            for line in ips:
+                ip = line.split()[0]
+                try:
+                    socket.inet_aton(ip)
+                    location = get_location(ip)
+                    open_ports = scan_ports(ip)
 
-                        if not open_ports:
-                            open_ports = [8443, 2053, 2083, 2087, 2096]
-
-                        verified_ports = []
-                        for port in open_ports:
-                            result = scan_ports(ip, port)
-                            if result:
-                                verified_ports.append(result)
-                                break
-
-                        # 使用 GeoIP 进行地区获取
-                        try:
-                            response = reader.city(ip)
-                            location = response.country.iso_code if response.country.iso_code else "未知地区"
-                        except Exception as e:
-                            print(f"Error fetching location for IP {ip} using GeoIP: {e}")
-                            location = "未知地区"
-
-                        f.write(f"{ip}:{','.join(map(str, verified_ports))}#{location}\n")  # 更新输出格式
-                    except socket.error:
-                        # 如果IP无效，则将原始行写入输出文件
-                        f.write(f"{ip}\n")
-                    except Exception as e:
-                        print(f"处理IP {ip} 时出错：{e}")
+                    if location:
+                        f.write(f"{ip}:{open_ports[0]}#{location}\n")
+                    else:
+                        f.write(f"{ip}:443#火星⭐\n")
+                except socket.error:
+                    f.write(f"{line}\n")
+                    continue
 
 if __name__ == "__main__":
-    input_urls = [
-        "https://ipdb.api.030101.xyz/?type=bestproxy", 
-        "https://ipdb.api.030101.xyz/?type=bestcf", 
-        'https://raw.githubusercontent.com/China-xb/zidonghuaip/main/ip.txt', 
-        'https://addressesapi.090227.xyz/CloudFlareYes', 
-        'https://kzip.pages.dev/a.csv?token=mimausb8', 
-        'https://cfno1.pages.dev/pure'
-    ]  # 包含IP地址的URL列表
-    output_files = ["bestproxy.txt", "bestcf.txt", 'ip.txt', 'cfip.txt', 'kzip.txt', 'cfno1.txt']
+    input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf", 'https://raw.githubusercontent.com/China-xb/zidonghuaip/main/ip.txt', 'https://addressesapi.090227.xyz/CloudFlareYes', 'https://kzip.pages.dev/a.csv?token=mimausb8']  # 包含IP地址的txt文件的多个URL
+    output_files = ["bestproxy.txt", "bestcf.txt", 'ip.txt', 'cfip.txt', 'kzip.txt']
     convert_ips(input_urls, output_files)
