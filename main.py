@@ -39,7 +39,7 @@ def get_location(ip):
         if data['status'] == 'success':
             return data['countryCode']
     except Exception as e:
-        print(f"Error fetching location for IP {ip} using ip-api.com: {e}")
+        print(f"Error fetching location for IP {ip} using ∗∗∗: {e}")
     return None
 
 def scan_ports(ip):
@@ -60,21 +60,29 @@ def convert_ips(input_urls, output_files):
 
         with open(output_file, 'w') as f:
             for line in ips:
-                ip = line.split()[0]
-                try:
-                    socket.inet_aton(ip)
-                    location = get_location(ip)
-                    open_ports = scan_ports(ip)
+                # Split the line by comma and extract the required fields
+                parts = line.split(',')
+                if len(parts) == 3:
+                    ip, port, location_info = parts
+                    try:
+                        socket.inet_aton(ip)
+                        location = get_location(ip)
+                        open_ports = scan_ports(ip)
 
-                    if location:
-                        f.write(f"{ip}:{open_ports[0]}#{location}\n")
-                    else:
-                        f.write(f"{ip}:443#火星⭐\n")
-                except socket.error:
+                        # Write the formatted string to the output file
+                        if location:
+                            f.write(f"{ip},{port},{location}\n")
+                        else:
+                            f.write(f"{ip},{port},火星⭐\n")
+                    except socket.error:
+                        # If the IP is invalid, write the original line to the output file
+                        f.write(f"{line}\n")
+                else:
+                    # If the line does not have the correct number of parts, write it to the output file
                     f.write(f"{line}\n")
-                    continue
 
 if __name__ == "__main__":
     input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf", 'https://raw.githubusercontent.com/China-xb/zidonghuaip/main/ip.txt', 'https://addressesapi.090227.xyz/CloudFlareYes', 'https://kzip.pages.dev/a.csv?token=mimausb8', 'https://cfno1.pages.dev/pure']  # 包含IP地址的txt文件的多个URL
     output_files = ["bestproxy.txt", "bestcf.txt", 'ip.txt', 'cfip.txt', 'kzip.txt', 'cfno1.txt']
     convert_ips(input_urls, output_files)
+    
