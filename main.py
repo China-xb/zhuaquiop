@@ -3,6 +3,10 @@ import socket
 from bs4 import BeautifulSoup
 from concurrent.futures import ThreadPoolExecutor
 import concurrent.futures
+import geoip2.database
+
+# 初始化 GeoIP 数据库
+reader = geoip2.database.Reader('GeoLite2-City.mmdb')
 
 def get_ips_from_url(url):
     try:
@@ -12,24 +16,6 @@ def get_ips_from_url(url):
     except Exception as e:
         print(f"无法从 {url} 获取IP地址：{e}")
         return []
-
-def get_location(ip):
-    try:
-        response = requests.get(f"http://whois.pconline.com.cn/ipJson.jsp?ip={ip}")
-        response.raise_for_status()
-        soup = BeautifulSoup(response.text, "html.parser")
-        font_element = soup.find("font")
-        if font_element:
-            font_content = font_element.text
-            location = font_content.split('"pro": "')[1].split('"')[0] if '"pro": "' in font_content else (
-                font_content.split('"city": "')[1].split('"')[0] if '"city": "' in font_content else "未知地区"
-            )
-            return location
-        else:
-            print(f"未找到IP {ip} 的字体元素")
-    except Exception as e:
-        print(f"获取IP {ip} 的位置时出错：{e}")
-    return None
 
 def scan_ports(ip, port):
     try:
@@ -46,16 +32,12 @@ def convert_ips(input_urls, output_files):
                 for ip in ips:
                     try:
                         socket.inet_aton(ip)  # 检查IP地址的格式是否正确
-                        location = get_location(ip)  # 获取IP地址的地区信息
                         open_ports = []
 
                         if ":" in ip:
                             parts = ip.split(":")
                             ip = parts[0]
                             open_ports = [int(p) for p in parts[1].split(",")]
-
-                        if not location:
-                            location = "未知地区"
 
                         if not open_ports:
                             open_ports = [8443, 2053, 2083, 2087, 2096]
@@ -66,6 +48,14 @@ def convert_ips(input_urls, output_files):
                             if result:
                                 verified_ports.append(result)
                                 break
+
+                        # 使用 GeoIP 进行地区获取
+                        try:
+                            response = reader.city(ip)
+                            location = response.country.iso_code if response.country.iso_code else "未知地区"
+                        except Exception as e:
+                            print(f"Error fetching location for IP {ip} using GeoIP: {e}")
+                            location = "未知地区"
 
                         f.write(f"{ip}:{','.join(map(str, verified_ports))}#{location}\n")  # 更新输出格式
                     except socket.error:
