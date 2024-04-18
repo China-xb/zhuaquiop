@@ -22,7 +22,7 @@ def get_location(ip):
         if font_element:
             font_content = font_element.text
             location = font_content.split('"pro": "')[1].split('"')[0] if '"pro": "' in font_content else (
-                font_content.split('"city": "')[1].split('"')[0] if '"city": "' in font_content else "未找到位置信息"
+                font_content.split('"city": "')[1].split('"')[0] if '"city": "' in font_content else "未知地区"
             )
             return location
         else:
@@ -48,18 +48,26 @@ def convert_ips(input_urls, output_files):
                         socket.inet_aton(ip)  # 检查IP地址的格式是否正确
                         location = get_location(ip)  # 获取IP地址的地区信息
                         open_ports = []
-                        with concurrent.futures.ThreadPoolExecutor() as port_executor:
-                            futures = [port_executor.submit(scan_ports, ip, port) for port in [8443, 2053, 2083, 2087, 2096]]
-                            for future in concurrent.futures.as_completed(futures):
-                                result = future.result()
-                                if result:
-                                    open_ports.append(result)
 
-                        # 将格式化后的字符串写入输出文件
-                        if location:
-                            f.write(f"{ip}:{','.join(map(str, open_ports))}#{location}\n")  # 更新输出格式
-                        else:
-                            f.write(f"{ip}:{','.join(map(str, open_ports))}#未知地区\n")  # 如果未找到位置信息，则默认为“未知地区”
+                        if ":" in ip:
+                            parts = ip.split(":")
+                            ip = parts[0]
+                            open_ports = [int(p) for p in parts[1].split(",")]
+
+                        if not location:
+                            location = "未知地区"
+
+                        if not open_ports:
+                            open_ports = [8443, 2053, 2083, 2087, 2096]
+
+                        verified_ports = []
+                        for port in open_ports:
+                            result = scan_ports(ip, port)
+                            if result:
+                                verified_ports.append(result)
+                                break
+
+                        f.write(f"{ip}:{','.join(map(str, verified_ports))}#{location}\n")  # 更新输出格式
                     except socket.error:
                         # 如果IP无效，则将原始行写入输出文件
                         f.write(f"{ip}\n")
