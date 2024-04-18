@@ -60,27 +60,22 @@ def convert_ips(input_urls, output_files):
         ips = get_ips_from_url(input_url)
 
         with open(output_file, 'w') as f:
-            for line in ips:
-                # 使用逗号拆分行并提取所需字段
-                parts = line.split(',')
-                if len(parts) == 3:
-                    ip, port, location_info = parts
-                    try:
-                        socket.inet_aton(ip)
-                        location = get_location(ip)
-                        open_ports = scan_ports(ip)
+            for ip in ips:
+                try:
+                    socket.inet_aton(ip)  # 检查IP地址的格式是否正确
+                    location = get_location(ip)  # 获取IP地址的地区信息
+                    open_ports = scan_ports(ip)  # 扫描IP地址的开放端口
 
-                        # 将格式化后的字符串写入输出文件
-                        if location:
-                            f.write(f"{ip}:{port}#{location}\n")  # 更新输出格式
-                        else:
-                            f.write(f"{ip}:{port}#火星⭐\n")  # 如果未找到位置信息，则默认为“火星⭐”
-                    except socket.error:
-                        # 如果IP无效，则将原始行写入输出文件
-                        f.write(f"{line}\n")
-                else:
-                    # 如果行的部分数量不正确，则将其写入输出文件
-                    f.write(f"{line}\n")
+                    # 将格式化后的字符串写入输出文件
+                    if location:
+                        f.write(f"{ip}#{location}\n")  # 更新输出格式
+                    else:
+                        f.write(f"{ip}#火星⭐\n")  # 如果未找到位置信息，则默认为“火星⭐”
+                except socket.error:
+                    # 如果IP无效，则将原始行写入输出文件
+                    f.write(f"{ip}\n")
+                except Exception as e:
+                    print(f"处理IP {ip} 时出错：{e}")
 
 if __name__ == "__main__":
     input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", 
