@@ -44,7 +44,7 @@ def get_location(ip):
 
 def scan_ports(ip):
     open_ports = []
-    for port in [8443, 2053, 2083, 2087, 2096]:
+    for port in [443, 2096, 2053, 2083, 2087, 8443]:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.settimeout(1)
         result = s.connect_ex((ip, port))
