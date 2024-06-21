@@ -1,35 +1,37 @@
+import os
+import glob
+import geoip2.database
 import requests
-import socket
 from bs4 import BeautifulSoup
 
-def get_ips_from_url(url):
+# 读取IPv4地址的文件
+def read_ips(filename):
     try:
-        response = requests.get(url)
-        if response.status_code == 200:
-            return response.text.splitlines()
-        else:
-            print(f"Failed to fetch IPs from {url}. Status code: {response.status_code}")
-    except Exception as e:
-        print(f"Error fetching IPs from {url}: {e}")
-    return []
+        with open(filename, 'r') as file:
+            return [line.strip() for line in file if line.strip()]
+    except FileNotFoundError:
+        print(f"The file {filename} was not found.")
+        return []
 
+# 使用geoip2获取IP的国家代码，如果失败则使用备用方法
+def get_country_code(ip, reader):
+    try:
+        response = reader.country(ip)
+        return response.country.iso_code
+    except Exception as e:
+        print(f"Error fetching data for IP {ip}: {e}")
+        return get_location(ip)  # 使用备用方法获取国家代码
+
+# 使用whois.pconline.com.cn和ip-api.com获取IP的地理位置信息
 def get_location(ip):
     try:
         response = requests.get(f"http://whois.pconline.com.cn/ipJson.jsp?ip={ip}")
         if response.status_code == 200:
-            soup = BeautifulSoup(response.text, "html.parser")
-            font_element = soup.find("font")
-            if font_element is not None:
-                font_content = font_element.text
-                if '"pro": "' in font_content:
-                    location = font_content.split('"pro": "')[1].split('"')[0]
-                elif '"city": "' in font_content:
-                    location = font_content.split('"city": "')[1].split('"')[0]
-                else:
-                    location = "Location information not found"
-                return location
+            data = response.json()
+            if 'err' not in data or data['err'] == "":
+                return data['proCode']  # 返回省代码作为国家代码的替代
             else:
-                print(f"Font element not found for IP {ip}")
+                print(f"Error fetching location for IP {ip} using whois.pconline.com.cn: {data['err']}")
     except Exception as e:
         print(f"Error fetching location for IP {ip} using http://whois.pconline.com.cn/ipJson.jsp?: {e}")
 
@@ -40,41 +42,47 @@ def get_location(ip):
             return data['countryCode']
     except Exception as e:
         print(f"Error fetching location for IP {ip} using ip-api.com: {e}")
-    return None
 
-def scan_ports(ip):
-    open_ports = []
-    for port in [443, 2096, 2053, 2083, 2087, 8443]:
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.settimeout(1)
-        result = s.connect_ex((ip, port))
-        if result == 0:
-            open_ports.append(port)
-    if not open_ports:
-        open_ports.append(443)
-    return open_ports
+    return 'Unknown'  # 如果两个API都失败，则返回Unknown
 
-def convert_ips(input_urls, output_files):
-    for input_url, output_file in zip(input_urls, output_files):
-        ips = get_ips_from_url(input_url)
+# 保存IP到对应的国家代码文件，并去除重复的IP地址
+def save_ip_to_file(ip, country_code):
+    if ip and country_code:  # 确保IP和国家代码有效
+        filename = f'{country_code}.txt'
+        # 确保文件存在，如果不存在则创建
+        if not os.path.exists(filename):
+            open(filename, 'w').close()
+        # 打开文件并检查IP地址是否已经存在
+        with open(filename, 'r') as file:
+            if ip + '\n' not in file.readlines():
+                # 如果IP地址不存在，则写入
+                with open(filename, 'a') as file:
+                    file.write(ip + '\n')
 
-        with open(output_file, 'w') as f:
-            for line in ips:
-                ip = line.split()[0]
-                try:
-                    socket.inet_aton(ip)
-                    location = get_location(ip)
-                    open_ports = scan_ports(ip)
+# 删除所有.txt文件，除了特定的文件
+def delete_existing_country_files(exceptions):
+    for file in glob.glob('*.txt'):
+        if file not in exceptions:
+            try:
+                os.remove(file)
+            except OSError as e:
+                print(f"Error deleting file {file}: {e}")
 
-                    if location:
-                        f.write(f"{ip}:{open_ports[0]}#{location}\n")
-                    else:
-                        f.write(f"{ip}:443#火星⭐\n")
-                except socket.error:
-                    f.write(f"{line}\n")
-                    continue
+# 主函数
+def main():
+    # 指定不删除的文件列表
+    exceptions = ['requirements.txt', 'dns_result.txt', 'Fission_domain.txt', 'Fission_ip.txt']
 
-if __name__ == "__main__":
-    input_urls = ["https://ipdb.api.030101.xyz/?type=bestproxy", "https://ipdb.api.030101.xyz/?type=bestcf"]  # 包含IP地址的txt文件的多个URL
-    output_files = ["bestproxy.txt", "bestcf.txt"]
-    convert_ips(input_urls, output_files)
+    # 删除所有现有的.txt文件，除了指定的文件
+    delete_existing_country_files(exceptions)
+
+    # 指定GeoLite2数据库文件的路径
+    database_path = 'GeoLite2-Country.mmdb'
+    with geoip2.database.Reader(database_path) as reader:
+        ips = read_ips('Fission_ip.txt')
+        for ip in ips:
+            country_code = get_country_code(ip, reader)
+            save_ip_to_file(ip, country_code)
+
+if __name__ == '__main__':
+    main()
