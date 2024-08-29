@@ -1,5 +1,4 @@
 name: Add Location of IP Addresses
-# 工作流的名称为“Add Location of IP Addresses”
 
 on:
   push:
@@ -8,27 +7,22 @@ on:
   schedule:
     - cron: '0 */6 * * *'  # 每隔两小时触发一次
   workflow_dispatch:  
-# 定义触发工作流的条件，包括推送到 main 分支、定时任务（每隔两小时）和手动触发
 
 permissions:
   contents: write
-# 设置对仓库内容的写入权限
 
 jobs:
   Modify_TXT:
     runs-on: ubuntu-latest
-    # 任务名为“Modify_TXT”，在“ubuntu-latest”环境下运行
 
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
-      # 第一步，使用“actions/checkout@v4”动作检出仓库代码
 
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: 3.12
-      # 第二步，使用“actions/setup-python@v5”动作设置 Python 3.12 环境
 
     - name: Install dependencies
       run: |
@@ -36,10 +30,9 @@ jobs:
         pip install requests
         pip install beautifulsoup4
         pip install geoip2
-      # 第三步，安装 Python 依赖库，包括升级 pip、安装 requests、beautifulsoup4 和 geoip2
-
+        
     - name: Run Conversion Script
-      run: python main.py  # 第四步，执行名为 main.py 的 Python 脚本进行 IP 地址转换
+      run: python main.py  # 执行Python脚本进行IP地址转换
 
     - name: Commit Changes
       run: |
@@ -48,10 +41,9 @@ jobs:
           git config core.ignorecase false
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Action"
-          git add.
+          git add .
           git commit -m "Updated at $(date '+%Y-%m-%d %H:%M:%S')"
           git push
         else
           echo "No changes detected in the repository."
         fi
-      # 第五步，如果有更改，则提交更改并推送。首先检查是否有更改，若有则设置 Git 配置，添加所有更改，提交并推送，提交消息包含当前时间。若没有更改，则输出提示信息。
