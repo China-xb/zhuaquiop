@@ -1,49 +1,35 @@
-name: Add Location of IP Addresses
-
+name: Run Script Workflow
 on:
   push:
-    branches:
-      - main
-  schedule:
-    - cron: '0 */6 * * *'  # 每隔两小时触发一次
-  workflow_dispatch:  
-
-permissions:
-  contents: write
-
+    branches: [ main ]
 jobs:
-  Modify_TXT:
+  run-script:
     runs-on: ubuntu-latest
-
+    permissions:
+      contents: write
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
-
-    - name: Set up Python
-      uses: actions/setup-python@v5
-      with:
-        python-version: 3.12
-
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install requests
-        pip install beautifulsoup4
-        pip install geoip2
-        
-    - name: Run Conversion Script
-      run: python main.py  # 执行Python脚本进行IP地址转换
-
-    - name: Commit Changes
-      run: |
-        if [[ -n "$(git status --porcelain)" ]]; then
-          echo "Changes detected in the repository."
-          git config core.ignorecase false
-          git config --local user.email "actions@github.com"
-          git config --local user.name "GitHub Action"
-          git add .
-          git commit -m "Updated at $(date '+%Y-%m-%d %H:%M:%S')"
-          git push
-        else
-          echo "No changes detected in the repository."
-        fi
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl
+      - name: Set environment variables
+        run: |
+          # 设置可能需要的环境变量，如果没有特定需求可以省略这一步
+          export SOME_VARIABLE=value
+      - name: Run script
+        run: bash script.sh
+      - name: Check for changes and commit
+        run: |
+          if [[ -n "$(git status --porcelain)" ]]; then
+            echo "Changes detected in the repository."
+            git config core.ignorecase false
+            git config --local user.email "actions@github.com"
+            git config --local user.name "GitHub Action"
+            git add.
+            git commit -m "Updated by GitHub Action at $(date '+%Y-%m-%d %H:%M:%S')"
+            git push
+          else
+            echo "No changes detected in the repository."
+          fi
